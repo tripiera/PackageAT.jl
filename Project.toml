@@ -1,0 +1,7 @@
+name = "PackageAT"
+uuid = "3b4e614f-3e99-41e3-ae89-0c289beee7c9"
+authors = ["tripiera <anaide.tripier@sfr.fr>"]
+version = "0.0.1"
+
+[compat]
+julia = "1.10"
