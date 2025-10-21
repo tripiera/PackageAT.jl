@@ -37,10 +37,6 @@ function ask_mbti_questions()
     println("Test MBTI - Réponds en tapant 1 ou 2")
     println("---------------------------------------")
 
-    for(i,(question,opt1,opt2,dim1,dim2)) in enumerate(questions)
-        println
-
-
 
     for (i, (question, opt1, opt2, dim1, dim2)) in enumerate(questions)
         println("\nQuestion $i : $question")#println = pas besoin de faire \n
@@ -152,8 +148,24 @@ function ask_mbti_questions()
     mbti = string(lettre1, lettre2, lettre3, lettre4)
     println("\n Ton type MBTI est  : $mbti ") 
 
+    filename = joinpath(pwd(), "mbti_result.txt")
+    open(filename, "w") do f
+        write(f, mbti)
+    end
+    println(" Votre résultat MBTI ($mbti) a été enregistré dans '$filename'.")
+
+    ####maintenant qu'on a notre mbti  je vais regarder avec qui il est compatible.
+    ####  j'ai deja definie avec qui chaque mbti est compatible dans mon dictionnaire qui se trouve dans types_projet.jl
+    #### chaqque mbti est compatible avec 3 autres.
+    #### je vais donc rajouter une question à l'utilisateur si il a des préferences en fonction des mbti compatibles
+
+
+    
+
+
     return mbti
+    
 end
 
 
-ask_mbti_questions()
+
