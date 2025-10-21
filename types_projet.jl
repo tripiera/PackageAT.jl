@@ -49,6 +49,9 @@ const MBTI_COMPATIBILITIES = Dict(
     "INFP" => ["ESTJ", "ISTP", "ENFP"]
 )
 
+
+
+
 ### compabilité des mbti:
 ## source: https://hitostat.com/fr/articles/16-personalities-compatibility
 
@@ -230,4 +233,85 @@ infp = MBTI(
 )
 
 
-
+const MBTI_QUESTIONS = Dict(
+    "ESTJ" => [
+        "Préférerais-tu quelqu'un de INFP : créatif, introspectif et idéaliste ?",
+        "Préférerais-tu quelqu'un de ENFP : enthousiaste, sociable et imaginatif ?",
+        "Préférerais-tu quelqu'un de ISTP : calme, pratique et analytique ?"
+    ],
+    "ISTJ" => [
+        "Préférerais-tu quelqu'un de ENFJ : chaleureux, organisé et charismatique ?",
+        "Préférerais-tu quelqu'un de INFJ : réfléchi, intuitif et empathique ?",
+        "Préférerais-tu quelqu'un de ESTP : énergique, pratique et spontané ?"
+    ],
+    "ESFJ" => [
+        "Préférerais-tu quelqu'un de INTP : logique, discret et créatif ?",
+        "Préférerais-tu quelqu'un de ENTP : inventif, sociable et curieux ?",
+        "Préférerais-tu quelqu'un de ISFP : sensible, artistique et attentionné ?"
+    ],
+    "ISFJ" => [
+        "Préférerais-tu quelqu'un de ENTJ : déterminé, organisé et ambitieux ?",
+        "Préférerais-tu quelqu'un de INTJ : stratégique, calme et visionnaire ?",
+        "Préférerais-tu quelqu'un de ESFP : spontané, joyeux et sociable ?"
+    ],
+    "ESTP" => [
+        "Préférerais-tu quelqu'un de INFJ : réfléchi, intuitif et empathique ?",
+        "Préférerais-tu quelqu'un de ENFJ : sociable, chaleureux et charismatique ?",
+        "Préférerais-tu quelqu'un de ISTJ : organisé, pratique et fiable ?"
+    ],
+    "ISTP" => [
+        "Préférerais-tu quelqu'un de ENFP : enthousiaste, curieux et imaginatif ?",
+        "Préférerais-tu quelqu'un de INFP : introspectif, créatif et idéaliste ?",
+        "Préférerais-tu quelqu'un de ESTJ : pratique, organisé et direct ?"
+    ],
+    "ESFP" => [
+        "Préférerais-tu quelqu'un de INTJ : stratégique, réfléchi et visionnaire ?",
+        "Préférerais-tu quelqu'un de ENTJ : ambitieux, organisé et motivé ?",
+        "Préférerais-tu quelqu'un de ISFJ : attentionné, calme et fiable ?"
+    ],
+    "ISFP" => [
+        "Préférerais-tu quelqu'un de ENTP : inventif, sociable et curieux ?",
+        "Préférerais-tu quelqu'un de INTP : analytique, créatif et discret ?",
+        "Préférerais-tu quelqu'un de ESFJ : chaleureux, sociable et attentionné ?"
+    ],
+    "ENTJ" => [
+        "Préférerais-tu quelqu'un de ISFJ : attentif, fiable et discret ?",
+        "Préférerais-tu quelqu'un de ESFP : joyeux, sociable et spontané ?",
+        "Préférerais-tu quelqu'un de INTJ : réfléchi, stratégique et visionnaire ?"
+    ],
+    "INTJ" => [
+        "Préférerais-tu quelqu'un de ESFP : joyeux, sociable et spontané ?",
+        "Préférerais-tu quelqu'un de ISFJ : fiable, attentif et calme ?",
+        "Préférerais-tu quelqu'un de ENTJ : ambitieux, organisé et déterminé ?"
+    ],
+    "ENTP" => [
+        "Préférerais-tu quelqu'un de ISFP : sensible, artistique et attentif ?",
+        "Préférerais-tu quelqu'un de ESFJ : sociable, chaleureux et attentif ?",
+        "Préférerais-tu quelqu'un de INTP : logique, discret et inventif ?"
+    ],
+    "INTP" => [
+        "Préférerais-tu quelqu'un de ESFJ : sociable, chaleureux et attentif ?",
+        "Préférerais-tu quelqu'un de ISFP : artistique, sensible et discret ?",
+        "Préférerais-tu quelqu'un de ENTP : curieux, inventif et sociable ?"
+    ],
+    "ENFJ" => [
+        "Préférerais-tu quelqu'un de ISTJ : organisé, fiable et réfléchi ?",
+        "Préférerais-tu quelqu'un de ESTP : spontané, pratique et direct ?",
+        "Préférerais-tu quelqu'un de INFJ : intuitif, réfléchi et empathique ?"
+    ],
+    "INFJ" => [
+        "Préférerais-tu quelqu'un de ESTP : pratique, énergique et spontané ?",
+        "Préférerais-tu quelqu'un de ISTJ : fiable, réfléchi et organisé ?",
+        "Préférerais-tu quelqu'un de ENFJ : sociable, chaleureux et charismatique ?"
+    ],
+    "ENFP" => [
+        "Préférerais-tu quelqu'un de ISTP : calme, pratique et analytique ?",
+        "Préférerais-tu quelqu'un de ESTJ : organisé, direct et efficace ?",
+        "Préférerais-tu quelqu'un de INFP : créatif, introspectif et idéaliste ?"
+    ],
+    "INFP" => [
+        "Préférerais-tu quelqu'un de ESTJ : organisé, direct et efficace ?",
+        "Préférerais-tu quelqu'un de ISTP : calme, pratique et analytique ?",
+        "Préférerais-tu quelqu'un de ENFP : enthousiaste, sociable et imaginatif ?"
+    ]
+)

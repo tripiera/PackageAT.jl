@@ -1,6 +1,6 @@
 using DataFrames
 using CSV
-
+include("types_projet.jl")
 #pour créer ma fonction de compatibilité
 
 # récupérations des données utilisateurs via machine pour le questionnaire
@@ -158,9 +158,40 @@ function ask_mbti_questions()
     ####  j'ai deja definie avec qui chaque mbti est compatible dans mon dictionnaire qui se trouve dans types_projet.jl
     #### chaqque mbti est compatible avec 3 autres.
     #### je vais donc rajouter une question à l'utilisateur si il a des préferences en fonction des mbti compatibles
+    compatibles = MBTI_COMPATIBILITIES[mbti]
+    questions_descriptives = MBTI_QUESTIONS[mbti]
+
+    for (i, q) in enumerate(questions_descriptives)
+        println("$i) $q")
+    end
+
+    println("Tape le numéro correspondant à ton choix (1, 2 ou 3), ou 0 pour laisser le hasard choisir.")
+    choice = ""
+    while !(choice in ["0","1","2","3"])
+        print("> ")
+        choice = readline()
+    end
+
+     
+    if choice == "0"
+        choice_compatibility=compatible[rand(1:3)]
+    else
+        choice_compatibility= compatibles[parse(Int, choice)]  # exemple : choice = readline()      # l'utilisateur tape "2"
+                                                                #num = parse(Int, choice) # convertit "2" en 2
+    end
+    println("\nTu pourrais envisager une personne de type MBTI : $choice_compatibility")
+
+
+    filename = joinpath(pwd(), "mbti_star_result.txt")
+    open(filename, "w") do f
+        write(f, choice_compatibilit)
+    end
+    println(" Votre résultat MBTI compatible avec vous ($mbti) a été enregistré dans '$filename'.")
+
 
 
     
+
 
 
     return mbti
