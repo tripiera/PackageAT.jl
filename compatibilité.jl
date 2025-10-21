@@ -182,11 +182,11 @@ function ask_mbti_questions()
     println("\nTu pourrais envisager une personne de type MBTI : $choice_compatibility")
 
 
-    filename = joinpath(pwd(), "mbti_star_result.txt")
-    open(filename, "w") do f
-        write(f, choice_compatibilit)
+    filename2 = joinpath(pwd(), "mbti_star_result.txt")
+    open(filename2, "w") do f
+        write(f, choice_compatibility)
     end
-    println(" Votre résultat MBTI compatible avec vous ($mbti) a été enregistré dans '$filename'.")
+    println(" Votre résultat MBTI compatible avec vous ( $choice_compatibility) a été enregistré dans '$filename2'.")
 
 
 
@@ -194,7 +194,7 @@ function ask_mbti_questions()
 
 
 
-    return mbti
+    return mbti, choice_compatibility
     
 end
 
