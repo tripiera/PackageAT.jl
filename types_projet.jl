@@ -6,6 +6,7 @@ mutable struct Star <: Personne
     firstname::String
     lastname::String
     age::Int
+    genre::String
     metier::String
     orientation::String
     mbti::String
@@ -15,8 +16,10 @@ end
 mutable struct Utilisateur <: Personne
     firstname::String
     lastname::String
+    genre::String
     age::Int
-    mbti::Union{String, Nothing}  # soit on connait et l'utilisateur rentre direct son mbti sinon on lui pose les questions (d'où le nothing)
+    orientation::String
+    mbti::String
 end
 
 
