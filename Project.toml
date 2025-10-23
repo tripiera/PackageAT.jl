@@ -1,7 +1,13 @@
 name = "PackageAT"
 uuid = "3b4e614f-3e99-41e3-ae89-0c289beee7c9"
-authors = ["tripiera <anaide.tripier@sfr.fr>"]
 version = "0.0.1"
+authors = ["tripiera <anaide.tripier@sfr.fr>"]
+
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 
 [compat]
+CSV = "0.10.15"
+DataFrames = "1.8.1"
 julia = "1.10"
