@@ -8,6 +8,72 @@ include("types_projet.jl")
 # parmis les 3 types compatibles ,lequel choisir???
 
 function ask_mbti_questions()
+    ###info pero utilisateurs 
+    println("Quel est ton nom?")
+    print("> ")
+    reponse1 = readline()
+    
+    println("Quel est ton prénom?")
+    print("> ")
+    reponse2 = readline()
+    
+    println("Quel est ton âge? ( en chiffre )")
+    print("> ")
+    reponse3 = readline()
+    # je vais convertir l'age(int) en string car comme j'utilise readline() qui est pour les string
+    # lorsque je définie utilisateur à la ligne 217 ca ne fonctionne pas. 
+    while isnothing(tryparse(Int, reponse3))
+        println("Tape en chiffre.")
+        print("> ")
+        reponse3 = readline()
+    end
+    reponse3 = parse(Int, reponse3)
+
+
+    
+    println("Es-tu une femme ou un homme (tape H ou F) ?")
+    reponse4 = ""
+    while !(reponse4 in ["H", "F"])
+        print("> ")
+        reponse4 = readline()
+        if !(reponse4 in ["H", "F"])
+            println("Réponse invalide, tape H ou F.")
+        end
+    end
+    
+    println("est-tu Hétérosexuel(1), Bisexuel(2), Gay(3), Lesbienne(4), Asexuelle(5), Pansexuel(6) ou Autre (7)?")
+    print("> ")
+    reponse5 = ""
+    while !(reponse5 in ["1","2","3","4","5","6","7"])
+        print("> ")
+        reponse5 = readline()
+        if !(reponse5 in ["1","2","3","4","5","6","7"])
+            println("Réponse invalide, tape un chiffre entre 1 et 7.")
+        end
+    end
+
+
+    if reponse5 =="1"
+        reponse5= "Hétéro"
+    elseif reponse5 == "2"
+        reponse5= "Bi"
+    elseif reponse5 == "3"
+        reponse5 = "Gay"
+    elseif reponse5 == "4"
+        reponse5= "Lesbienne"
+    elseif reponse5 == "5"
+        reponse5 ="Asexuelle"
+    elseif reponse5 =="6"
+        reponse5 = "Pan"
+    elseif reponse5 == "7"
+        reponse5 = "Autre"
+    
+    end  
+
+
+
+
+
     questions = [
         ("Quand tu es fatigué(e), tu préfères :", "Sortir voir des amis", "Rester seul(e)", 'E', 'I'),
         ("En soirée, tu :", "Adores parler à plein de monde", "Préfères discuter avec une ou deux personnes", 'E', 'I'),
@@ -148,6 +214,11 @@ function ask_mbti_questions()
     mbti = string(lettre1, lettre2, lettre3, lettre4)
     println("\n Ton type MBTI est  : $mbti ") 
 
+    utili = Utilisateur(reponse2,reponse1,reponse4,reponse3,reponse5, mbti  )
+    print(utili) 
+    
+    #######
+
     filename = joinpath(pwd(), "mbti_result.txt")
     open(filename, "w") do f
         write(f, mbti)
@@ -187,12 +258,6 @@ function ask_mbti_questions()
         write(f, choice_compatibility)
     end
     println(" Votre résultat MBTI compatible avec vous ( $choice_compatibility) a été enregistré dans '$filename2'.")
-
-
-
-    
-
-
 
     return mbti, choice_compatibility
     
