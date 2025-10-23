@@ -4,7 +4,7 @@ include("types_projet.jl")
 #pour créer ma fonction de compatibilité
 
 # récupérations des données utilisateurs via machine pour le questionnaire
-# nom, prénom, age, orientation sexuelle, mbti(questionnaires ou non)
+# nom, prénom, age, orientation sexuelle, mbti
 # parmis les 3 types compatibles ,lequel choisir???
 
 function ask_mbti_questions()
