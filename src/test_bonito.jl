@@ -1,4 +1,5 @@
 using Bonito
+using Markdown
 
 app = App() do session
     # Widgets

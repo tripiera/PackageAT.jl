@@ -22,69 +22,49 @@ const QUESTIONS = [
     ("Les règles :", "Sont faites pour être respectées", "Sont faites pour être adaptées", 'J', 'P')
 ]
 
-function ask_mbti_questions_bonito()
+function ask_mbti_bonito()
     app = App() do session
-
-        # --- Inputs ---
+        # --- Infos utilisateur ---
         name = TextField("", Dict(:placeholder=>"Nom"))
         firstname = TextField("", Dict(:placeholder=>"Prénom"))
         age = TextField("", Dict(:placeholder=>"Âge"))
         genre = Dropdown(["H"=>"Homme", "F"=>"Femme"], label="Genre")
         orientation = Dropdown(["1"=>"Hétéro", "2"=>"Bi", "3"=>"Gay", "4"=>"Lesbienne", "5"=>"Asexuelle", "6"=>"Pan", "7"=>"Autre"], label="Orientation")
         start_btn = Button("Commencer le test MBTI")
-        info = Observable{Markdown.MD}(md"")
+        info_output = Observable{String}("")
 
-        # --- Question UI ---
-        question_div = Observable{Markdown.MD}(md"")
-        opt1_label = Observable{Markdown.MD}(md"")
-        opt2_label = Observable{Markdown.MD}(md"")
+        # --- Zone de questionnaire ---
+        question_text = Observable{String}("")
+        opt1_text = Observable{String}("")
+        opt2_text = Observable{String}("")
+        progress_text = Observable{String}("")
+        result_text = Observable{String}("")
+        descr_text = Observable{String}("")
+
+        # --- Boutons ---
         opt1_btn = Button("1")
         opt2_btn = Button("2")
-        progress = Observable{Markdown.MD}(md"")
+        compat_btns = [Button("Choix 1"), Button("Choix 2"), Button("Choix 3")]
 
-        # --- Résultat MBTI ---
-        result = Observable{Markdown.MD}(md"")
-        descr_compat = Observable{Markdown.MD}(md"")
-
-        # --- Compatibilité ---
-        compat_btns = [
-            Button("Choix 1"),
-            Button("Choix 2"),
-            Button("Choix 3")
-        ]
-
-        # --- état ---
+        # --- État ---
         qidx = Ref(0)
         scores = Dict('E'=>0,'I'=>0,'S'=>0,'N'=>0,'T'=>0,'F'=>0,'J'=>0,'P'=>0)
         tie_letters = Dict{Symbol,Char}()
         phase = Ref(:intro)  # :intro, :questions, :tie, :compat, :choix_compat, :done
 
-        # --- Fonctions utilitaires ---
-        function reset!()
-            for k in keys(scores); scores[k]=0; end
-            empty!(tie_letters)
-            qidx[] = 0
-            phase[] = :intro
-            set_markdown!(question_div, md"")
-            set_markdown!(opt1_label, md"")
-            set_markdown!(opt2_label, md"")
-            set_markdown!(progress, md"")
-            set_markdown!(result, md"")
-            set_markdown!(descr_compat, md"")
-        end
-
-        function update_question_ui!()
+        function update_question!()
             if qidx[] >= 1 && qidx[] <= length(QUESTIONS)
                 (q,a1,a2,d1,d2) = QUESTIONS[qidx[]]
-                set_markdown!(question_div, md"**Question $(qidx[]) / $(length(QUESTIONS))** — $q")
-                set_markdown!(opt1_label, md"$a1")
-                set_markdown!(opt2_label, md"$a2")
-                set_markdown!(progress, md"Progression : $(qidx[]) / $(length(QUESTIONS))")
+                question_text[] = "Question $(qidx[]) / $(length(QUESTIONS)) — $q"
+                opt1_text[] = a1
+                opt2_text[] = a2
+                progress_text[] = "Progression : $(qidx[]) / $(length(QUESTIONS))"
             else
-                set_markdown!(question_div, md"")
-                set_markdown!(opt1_label, md"")
-                set_markdown!(opt2_label, md"")
-                set_markdown!(progress, md"")
+                question_text[] = ""
+                opt1_text[] = ""
+                opt2_text[] = ""
+                progress_text[] = ""
+                handle_end_or_tie!()
             end
         end
 
@@ -95,25 +75,28 @@ function ask_mbti_questions_bonito()
             tie_letters[:L3] = scores['T'] != scores['F'] ? (scores['T']>scores['F'] ? 'T' : 'F') : nothing
             tie_letters[:L4] = scores['J'] != scores['P'] ? (scores['J']>scores['P'] ? 'J' : 'P') : nothing
 
-            # Gérer égalités
-            if tie_letters[:L1] === nothing; phase[] = :tie_EI; set_markdown!(question_div, md"Egalité E/I — Choisis 1 ou 2"); return; end
-            if tie_letters[:L2] === nothing; phase[] = :tie_SN; set_markdown!(question_div, md"Egalité S/N — Choisis 1 ou 2"); return; end
-            if tie_letters[:L3] === nothing; phase[] = :tie_TF; set_markdown!(question_div, md"Egalité T/F — Choisis 1 ou 2"); return; end
-            if tie_letters[:L4] === nothing; phase[] = :tie_JP; set_markdown!(question_div, md"Egalité J/P — Choisis 1 ou 2"); return; end
+            if tie_letters[:L1] === nothing
+                phase[] = :tie_EI; question_text[] = "Egalité E/I — Choisis 1 ou 2"; return
+            end
+            if tie_letters[:L2] === nothing
+                phase[] = :tie_SN; question_text[] = "Egalité S/N — Choisis 1 ou 2"; return
+            end
+            if tie_letters[:L3] === nothing
+                phase[] = :tie_TF; question_text[] = "Egalité T/F — Choisis 1 ou 2"; return
+            end
+            if tie_letters[:L4] === nothing
+                phase[] = :tie_JP; question_text[] = "Egalité J/P — Choisis 1 ou 2"; return
+            end
 
-            # Tout défini -> affichage MBTI
+            # Tout défini
             phase[] = :compat
             mbti = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
             session[:mbti] = mbti
-            set_markdown!(result, md"### Ton MBTI : **$mbti**")
+            result_text[] = "Ton MBTI : $mbti"
             if haskey(MBTI_QUESTIONS, mbti)
-                s = "**Descriptions (aide au choix) :**\n"
-                for (i,d) in enumerate(MBTI_QUESTIONS[mbti])
-                    s *= "\n- $(i)) $d"
-                end
-                set_markdown!(descr_compat, md"$s")
+                descr_text[] = join(MBTI_QUESTIONS[mbti], "\n")
             else
-                set_markdown!(descr_compat, md"Descriptions non disponibles.")
+                descr_text[] = "Descriptions non disponibles."
             end
         end
 
@@ -122,11 +105,7 @@ function ask_mbti_questions_bonito()
                 (q,a1,a2,d1,d2) = QUESTIONS[qidx[]]
                 scores[which==1 ? d1 : d2] += 1
                 qidx[] += 1
-                if qidx[] <= length(QUESTIONS)
-                    update_question_ui!()
-                else
-                    handle_end_or_tie!()
-                end
+                update_question!()
             elseif phase[] in [:tie_EI, :tie_SN, :tie_TF, :tie_JP]
                 if phase[] == :tie_EI; tie_letters[:L1] = which==1 ? 'E' : 'I'
                 elseif phase[] == :tie_SN; tie_letters[:L2] = which==1 ? 'S' : 'N'
@@ -138,12 +117,12 @@ function ask_mbti_questions_bonito()
                 mbti = session[:mbti]
                 compatibles = MBTI_COMPATIBILITIES[mbti]
                 chosen = compatibles[which]
-                set_markdown!(result, md"### Ton MBTI : $mbti\n**MBTI compatible choisi :** $chosen")
+                result_text[] = "Ton MBTI : $mbti\nMBTI compatible choisi : $chosen"
                 phase[] = :done
             end
         end
 
-        # --- Liens boutons ---
+        # --- Callbacks ---
         on(opt1_btn) do _; choose_opt(1); end
         on(opt2_btn) do _; choose_opt(2); end
         for (i, btn) in enumerate(compat_btns)
@@ -151,27 +130,29 @@ function ask_mbti_questions_bonito()
         end
 
         on(start_btn) do _
-            if isempty(name[]) || isempty(firstname[]); set_markdown!(info, md"Erreur: nom et prénom requis."); return; end
-            if isnothing(tryparse(Int, age[])); set_markdown!(info, md"Erreur: âge doit être un chiffre."); return; end
+            if isempty(name[]) || isempty(firstname[])
+                info_output[] = "Erreur : nom et prénom requis."; return
+            end
+            if isnothing(tryparse(Int, age[]))
+                info_output[] = "Erreur : âge doit être un chiffre."; return
+            end
             qidx[] = 1
             phase[] = :questions
-            update_question_ui!()
-            set_markdown!(info, md"Bonjour **$(firstname[]) $(name[])**, commence le questionnaire.")
+            update_question!()
+            info_output[] = "Bonjour $(firstname[]) $(name[]), commence le questionnaire."
         end
 
         # --- Layout ---
         return DOM.div(
-            md"# Test MBTI",
-            DOM.div(md"## Informations", name, firstname, age, genre, orientation, start_btn, info),
-            DOM.div(md"## Questionnaire", question_div, DOM.div(opt1_btn,opt1_label), DOM.div(opt2_btn,opt2_label), progress),
-            DOM.div(md"## Résultat", result, descr_compat, DOM.div(compat_btns...))
+            DOM.div("## Informations", name, firstname, age, genre, orientation, start_btn, info_output),
+            DOM.div("## Questionnaire", DOM.div(question_text), DOM.div(opt1_btn,opt1_text), DOM.div(opt2_btn,opt2_text), DOM.div(progress_text)),
+            DOM.div("## Résultat", DOM.div(result_text), DOM.div(descr_text), DOM.div(compat_btns...))
         )
     end
 
     return app
 end
 
-app = ask_mbti_questions_bonito()
-
-# Ouvre dans le navigateur
-Bonito.HTTPServer.serve(app; host="127.0.0.1", port=8000)
+app = ask_mbti_bonito()
+server = Bonito.Server(app, "127.0.0.1", 8080)
+route!(server, "/" => app)
