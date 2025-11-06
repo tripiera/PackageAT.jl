@@ -8,7 +8,7 @@ include("types_projet.jl")
 # parmis les 3 types compatibles ,lequel choisir???
 
 function ask_mbti_questions()
-    ###info pero utilisateurs 
+    ###info pour utilisateurs 
     println("Quel est ton nom?")
     print("> ")
     reponse1 = readline()
