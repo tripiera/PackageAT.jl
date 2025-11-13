@@ -1,157 +1,181 @@
 using Bonito
-using DataFrames
-using CSV
-include("types_projet.jl")
+using Markdown
 
-function ask_mbti_questions_bonito()
-    # Création de la page bonito
-    page = Page()
+include("types_projet.jl")  # Utilisateur, MBTI_COMPATIBILITIES, MBTI_QUESTIONS
 
-    ###infos utilisateur
-    name = Textbox(placeholder="Nom")
-    firstname = Textbox(placeholder="Prénom")
-    age = Textbox(placeholder="Âge (en chiffres)")
-    genre = Dropdown(["H" => "Homme", "F" => "Femme"], label="Genre")
-    orientation = Dropdown([
-        "1" => "Hétérosexuel",
-        "2" => "Bisexuel",
-        "3" => "Gay",
-        "4" => "Lesbienne",
-        "5" => "Asexuel",
-        "6" => "Pansexuel",
-        "7" => "Autre"
-    ], label="Orientation sexuelle")
+const QUESTIONS = [
+    ("Quand tu es fatigué(e), tu préfères :", "Sortir voir des amis", "Rester seul(e)", 'E', 'I'),
+    ("En soirée, tu :", "Adores parler à plein de monde", "Préfères discuter avec une ou deux personnes", 'E', 'I'),
+    ("Quand tu rencontres quelqu’un de nouveau :", "Tu engages facilement la conversation", "Tu attends qu’on te parle", 'E', 'I'),
+    ("Au travail ou en groupe :", "Tu t’exprimes spontanément", "Tu réfléchis avant de parler", 'E', 'I'),
+    ("Tu te fies plutôt à :", "Ton expérience passée", "Ton intuition", 'S', 'N'),
+    ("Tu as tendance à :", "Remarquer les détails", "Imaginer les possibilités", 'S', 'N'),
+    ("Tu préfères :", "Ce qui est tangible et réel", "Ce qui est théorique et abstrait", 'S', 'N'),
+    ("On te décrit comme :", "Pragmatique", "Visionnaire", 'S', 'N'),
+    ("Quand un ami a un problème :", "Tu proposes une solution", "Tu offres du soutien émotionnel", 'T', 'F'),
+    ("On te dit souvent :", "Franc(he) et rationnel(le)", "Empathique et attentionné(e)", 'T', 'F'),
+    ("Quand tu décides :", "Tu utilises la logique", "Tu écoutes ton cœur", 'T', 'F'),
+    ("Dans les débats :", "Tu défends la vérité", "Tu protèges les sentiments des autres", 'T', 'F'),
+    ("Quand tu planifies :", "Tu veux tout prévoir à l’avance", "Tu préfères t’adapter au moment venu", 'J', 'P'),
+    ("Tes journées sont :", "Structurées et organisées", "Souples et improvisées", 'J', 'P'),
+    ("Tu préfères :", "Finir les choses avant d’en commencer d’autres", "Avoir plusieurs projets ouverts", 'J', 'P'),
+    ("Les règles :", "Sont faites pour être respectées", "Sont faites pour être adaptées", 'J', 'P')
+]
 
-    submit_info = Button("Valider les informations")
-    info_box = vbox(
-        md"### Informations personnelles",
-        name,
-        firstname,
-        age,
-        genre,
-        orientation,
-        submit_info
-    )
+function ask_mbti_bonito()
+    app = App() do session
+        # --- Infos utilisateur ---
+        name = TextField("", Dict(:placeholder=>"Nom"))
+        firstname = TextField("", Dict(:placeholder=>"Prénom"))
+        age = TextField("", Dict(:placeholder=>"Âge"))
+        genre = Dropdown(["H"=>"Homme", "F"=>"Femme"], label="Genre")
+        orientation = Dropdown(["1"=>"Hétéro", "2"=>"Bi", "3"=>"Gay", "4"=>"Lesbienne", "5"=>"Asexuelle", "6"=>"Pan", "7"=>"Autre"], label="Orientation")
+        start_btn = Button("Commencer le test MBTI")
+        info_output = Observable{String}("")
 
-    #questionaire
-    questions = [
-        ("Quand tu es fatigué(e), tu préfères :", "Sortir voir des amis", "Rester seul(e)", 'E', 'I'),
-        ("En soirée, tu :", "Adores parler à plein de monde", "Préfères discuter avec une ou deux personnes", 'E', 'I'),
-        ("Quand tu rencontres quelqu’un de nouveau :", "Tu engages facilement la conversation", "Tu attends qu’on te parle", 'E', 'I'),
-        ("Au travail ou en groupe :", "Tu t’exprimes spontanément", "Tu réfléchis avant de parler", 'E', 'I'),
-        ("Tu te fies plutôt à :", "Ton expérience passée", "Ton intuition", 'S', 'N'),
-        ("Tu as tendance à :", "Remarquer les détails", "Imaginer les possibilités", 'S', 'N'),
-        ("Tu préfères :", "Ce qui est tangible et réel", "Ce qui est théorique et abstrait", 'S', 'N'),
-        ("On te décrit comme :", "Pragmatique", "Visionnaire", 'S', 'N'),
-        ("Quand un ami a un problème :", "Tu proposes une solution", "Tu offres du soutien émotionnel", 'T', 'F'),
-        ("On te dit souvent :", "Franc(he) et rationnel(le)", "Empathique et attentionné(e)", 'T', 'F'),
-        ("Quand tu décides :", "Tu utilises la logique", "Tu écoutes ton cœur", 'T', 'F'),
-        ("Dans les débats :", "Tu défends la vérité", "Tu protèges les sentiments des autres", 'T', 'F'),
-        ("Quand tu planifies :", "Tu veux tout prévoir à l’avance", "Tu préfères t’adapter au moment venu", 'J', 'P'),
-        ("Tes journées sont :", "Structurées et organisées", "Souples et improvisées", 'J', 'P'),
-        ("Tu préfères :", "Finir les choses avant d’en commencer d’autres", "Avoir plusieurs projets ouverts", 'J', 'P'),
-        ("Les règles :", "Sont faites pour être respectées", "Sont faites pour être adaptées", 'J', 'P')
-    ]
+        # --- Zone de questionnaire ---
+        question_text = Observable{String}("")
+        opt1_text = Observable{String}("")
+        opt2_text = Observable{String}("")
+        progress_text = Observable{String}("")
+        result_text = Observable{String}("")
+        descr_text = Observable{String}("")
 
-    # init
-    scores = Dict('E'=>0, 'I'=>0, 'S'=>0, 'N'=>0, 'T'=>0, 'F'=>0, 'J'=>0, 'P'=>0)
-    q_index = Observable(1)
-    result_label = Label("")
+        # --- Boutons ---
+        opt1_btn = Button("1")
+        opt2_btn = Button("2")
+        compat_btns = [Button("Choix 1"), Button("Choix 2"), Button("Choix 3")]
 
-    question_label = Label("")
-    bouton1 = Button("")
-    bouton2 = Button("")
-    bouton_suivant = Button("Question suivante", enabled=false)
+        # --- État ---
+        qidx = Ref(0)
+        scores = Dict('E'=>0,'I'=>0,'S'=>0,'N'=>0,'T'=>0,'F'=>0,'J'=>0,'P'=>0)
+        tie_letters = Dict{Symbol,Char}()
+        phase = Ref(:intro)  # :intro, :questions, :tie, :compat, :choix_compat, :done
 
-    # fonction qui permet de  mettre à jour l’interface dynamiquement en fonction des clics sur les boutons
-    #car Bonito ne bloque pas le programme en attendant que l’utilisateur tape quelque chose ,comme readline() le fait dans le terminal.
-    function miseajour_question(i)
-        if i > length(questions) #si on a déjà posé toutes les questions :affichage resultat
-            bouton_suivant.enabled = false
-            question_label.text = "Chargement du résultat..."
-            res_affich()
-            return
-        end
-        q = questions[i]
-        question_label.text = q[1] #question
-       bouton1.label =  q[2] #response 1 
-        bouton2.label = q[3] # reponse 2
-        bouton_suivant.enabled = false
-    end
-
-    function res_affich()
-        
-        function cas_egalite(sym1, sym2, qtext, o1, o2)
-            if scores[sym1] > scores[sym2]
-                return sym1
-            elseif scores[sym2] > scores[sym1]
-                return sym2
+        function update_question!()
+            if qidx[] >= 1 && qidx[] <= length(QUESTIONS)
+                (q,a1,a2,d1,d2) = QUESTIONS[qidx[]]
+                question_text[] = "Question $(qidx[]) / $(length(QUESTIONS)) — $q"
+                opt1_text[] = a1
+                opt2_text[] = a2
+                progress_text[] = "Progression : $(qidx[]) / $(length(QUESTIONS))"
             else
-                # affichage de la question de départage
-                question_label.text = qtext
-                bouton1.label = o1
-                bouton2.label = o2
-                bouton_suivant.enabled = false
-                # bloque ici jusqu'à clic utilisateur
-                wait(bouton1)
-                return (bouton1.clicked[] > bouton2.clicked[]) ? sym1 : sym2
+                question_text[] = ""
+                opt1_text[] = ""
+                opt2_text[] = ""
+                progress_text[] = ""
+                handle_end_or_tie!()
             end
         end
 
-        l1 = cas_egalite('E','I',"Égalité entre E et I :","Parler aux autres (E)","Être seul(e) (I)")
-        l2 = cas_egalite('S','N',"Égalité entre S et N :","Observer (S)","Imaginer (N)")
-        l3 = cas_egalite('T','F',"Égalité entre T et F :","Logique (T)","Émotions (F)")
-        l4 = cas_egalite('J','P',"Égalité entre J et P :","Planifier (J)","Improviser (P)")
+        function handle_end_or_tie!()
+            # Départage égalités
+            tie_letters[:L1] = scores['E'] != scores['I'] ? (scores['E']>scores['I'] ? 'E' : 'I') : nothing
+            tie_letters[:L2] = scores['S'] != scores['N'] ? (scores['S']>scores['N'] ? 'S' : 'N') : nothing
+            tie_letters[:L3] = scores['T'] != scores['F'] ? (scores['T']>scores['F'] ? 'T' : 'F') : nothing
+            tie_letters[:L4] = scores['J'] != scores['P'] ? (scores['J']>scores['P'] ? 'J' : 'P') : nothing
 
-        mbti = string(l1,l2,l3,l4)
-        result_label.text = "Ton type MBTI est : **$mbti** 🎯"
+            # Cas d'égalité
+            if tie_letters[:L1] === nothing
+                phase[] = :tie_EI
+                question_text[] = "Égalité entre E et I"
+                opt1_text[] = "Tu trouves ton énergie en parlant aux autres (E)"
+                opt2_text[] = "Tu trouves ton énergie en étant seul(e) (I)"
+                return
+            elseif tie_letters[:L2] === nothing
+                phase[] = :tie_SN
+                question_text[] = "Égalité entre S et N"
+                opt1_text[] = "Tu fais confiance à ce que tu peux observer (S)"
+                opt2_text[] = "Tu fais confiance à ton intuition (N)"
+                return
+            elseif tie_letters[:L3] === nothing
+                phase[] = :tie_TF
+                question_text[] = "Égalité entre T et F"
+                opt1_text[] = "Tu décides selon la logique et les faits (T)"
+                opt2_text[] = "Tu décides selon les émotions et les valeurs (F)"
+                return
+            elseif tie_letters[:L4] === nothing
+                phase[] = :tie_JP
+                question_text[] = "Égalité entre J et P"
+                opt1_text[] = "Tu préfères planifier et organiser (J)"
+                opt2_text[] = "Tu préfères improviser et rester flexible (P)"
+                return
+            end
 
-        #si on a une preference parmis l'un des 3 types
-        compatibles = MBTI_COMPATIBILITIES[mbti]
-        descr = MBTI_QUESTIONS[mbti]
-        compat_options = [Radio(o) for o in descr]
-        bouton_random = Button("Choisir au hasard")
-        compat_section = vbox(
-            md"### Types compatibles",
-            compat_options...,
-            bouton_random
+            # Sinon, tout est défini → afficher résultat
+            phase[] = :compat
+            mbti = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
+            session[:mbti] = mbti
+            result_text[] = "Ton MBTI : $mbti"
+
+            if haskey(MBTI_QUESTIONS, mbti)
+                descr_text[] = join(MBTI_QUESTIONS[mbti], "\n")
+            else
+                descr_text[] = "Descriptions non disponibles."
+            end
+
+            # Préparer affichage compatibilités
+            compatibles = MBTI_COMPATIBILITIES[mbti]
+            for (i, btn) in enumerate(compat_btns)
+                btn.label[] = "Choix $(i): $(compatibles[i])"
+            end
+            phase[] = :choix_compat
+        end
+
+
+        function choose_opt(which::Int)
+            if phase[] == :questions
+                (q,a1,a2,d1,d2) = QUESTIONS[qidx[]]
+                scores[which==1 ? d1 : d2] += 1
+                qidx[] += 1
+                update_question!()
+            elseif phase[] in [:tie_EI, :tie_SN, :tie_TF, :tie_JP]
+                if phase[] == :tie_EI; tie_letters[:L1] = which==1 ? 'E' : 'I'
+                elseif phase[] == :tie_SN; tie_letters[:L2] = which==1 ? 'S' : 'N'
+                elseif phase[] == :tie_TF; tie_letters[:L3] = which==1 ? 'T' : 'F'
+                elseif phase[] == :tie_JP; tie_letters[:L4] = which==1 ? 'J' : 'P'
+                end
+                handle_end_or_tie!()
+            elseif phase[] == :choix_compat
+                mbti = session[:mbti]
+                compatibles = MBTI_COMPATIBILITIES[mbti]
+                chosen = compatibles[which]
+                result_text[] = "Ton MBTI : $mbti\nMBTI compatible choisi : $chosen"
+                phase[] = :done
+            end
+        end
+
+        # --- Callbacks ---
+        on(opt1_btn) do _; choose_opt(1); end
+        on(opt2_btn) do _; choose_opt(2); end
+        for (i, btn) in enumerate(compat_btns)
+            on(btn) do _; choose_opt(i); end
+        end
+
+        on(start_btn) do _
+            if isempty(name[]) || isempty(firstname[])
+                info_output[] = "Erreur : nom et prénom requis."; return
+            end
+            if isnothing(tryparse(Int, age[]))
+                info_output[] = "Erreur : âge doit être un chiffre."; return
+            end
+            qidx[] = 1
+            phase[] = :questions
+            update_question!()
+            info_output[] = "Bonjour $(firstname[]) $(name[]), commence le questionnaire."
+        end
+
+        # --- Layout ---
+        return DOM.div(
+            DOM.div("## Informations", name, firstname, age, genre, orientation, start_btn, info_output),
+            DOM.div("## Questionnaire", DOM.div(question_text), DOM.div(opt1_btn,opt1_text), DOM.div(opt2_btn,opt2_text), DOM.div(progress_text)),
+            DOM.div("## Résultat", DOM.div(result_text), DOM.div(descr_text), DOM.div(compat_btns...))
         )
-        append!(page, compat_section)
     end
 
-    # gestion des clics
-    on(bouton1) do _  #execute le code à l’intérieur chaque fois que l’utilisateur interagit avecbouton1
-        i = q_index[]  #q_index = un obersvable  j'ai pu apprendre que un observable= "boite à valeurs"
-        dim1, dim2 = questions[i][4], questions[i][5] #Chaque question a deux dimensions
-        scores[dim1] += 1#si l’utilisateur a cliqué sur le bouton 1, on incrémente le score de la première dimension
-        bouton_suivant.enabled = true
-    end
-    on(bouton2) do _
-        i = q_index[]
-        dim1, dim2 = questions[i][4], questions[i][5]
-        scores[dim2] += 1 #comme on a fait dim 1 on fait dim2
-        bouton_suivant.enabled = true #suivant
-    end
-    on(bouton_suivant) do _
-        q_index[] += 1  #question suivante
-        miseajour_question(q_index[]) #met à jour le texte et les boutons pour la prochaine question
-    end
-
-    miseajour_question(1)
-    #maintenant que tout est defini : on ajoute tous les éléments dans la page web
-    append!(page, [
-        info_box,
-        vbox(
-            md"# Questionnaire MBTI",
-            question_label,
-            hbox(bouton1, bouton2),
-            bouton_suivant,
-            result_label
-        )
-    ])
-
-    return page
+    return app
 end
 
-# Pour lancer le questionnaire :
-Bonito.serve(ask_mbti_questions_bonito)
+app = ask_mbti_bonito()
+server = Bonito.Server(app, "127.0.0.1", 8080)
+route!(server, "/" => app)
