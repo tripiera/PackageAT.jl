@@ -5,7 +5,7 @@
 
 using CSV
 using DataFrames
-include("../types_projet.jl")
+include("types_projet.jl")
 
 # ===========================================================
 # Helpers de normalisation
