@@ -7,10 +7,10 @@
 using CSV, DataFrames
 
 # === Importation des modules nécessaires ===
-include("compatibilité.jl")             # contient ask_mbti_questions()
-include("types_projet.jl")              # structures et dictionnaires
-include("src/calcul_compatibilite.jl")  # fonctions de calcul des compatibilités
-include("src/graphique_coeur.jl")       # affichage graphique du cœur
+include("../src/compatibilité.jl")             # contient ask_mbti_questions()
+include("../src/types_projet.jl")              # structures et dictionnaires
+include("../src/calcul_compatibilite.jl")  # fonctions de calcul des compatibilités
+include("../graphique/graphique_coeur.jl")       # affichage graphique du cœur
 
 println("===  TEST DE COMPATIBILITÉ ===\n")
 
