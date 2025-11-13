@@ -46,7 +46,7 @@ println("\n Utilisateur chargé : $(user.firstname) $(user.lastname), $(user.age
 ##########################################################
 
 println("\n Chargement des célébrités...")
-stars = charger_stars("base_stars_clean.csv")
+stars = charger_stars("../data/base_stars_clean.csv")
 
 println("\n Calcul en cours...\n")
 resultats = trouver_meilleures_compatibilites(user, stars)

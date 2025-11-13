@@ -226,11 +226,11 @@ function ask_mbti_questions()
     
     #######
 
-    # filename = joinpath(pwd(), "mbti_result.txt")
-    # open(filename, "w") do f
-    #     write(f, mbti)
-    # end
-    # println(" Votre résultat MBTI ($mbti) a été enregistré dans '$filename'.")
+    filename = joinpath(pwd(), "mbti_result.txt")
+    open(filename, "w") do f
+        write(f, mbti)
+    end
+    println(" Votre résultat MBTI ($mbti) a été enregistré dans '$filename'.")
 
     ####maintenant qu'on a notre mbti  je vais regarder avec qui il est compatible.
     ####  j'ai deja definie avec qui chaque mbti est compatible dans mon dictionnaire qui se trouve dans types_projet.jl
@@ -260,11 +260,11 @@ function ask_mbti_questions()
     println("\nTu pourrais envisager une personne de type MBTI : $choice_compatibility")
 
 
-    # filename2 = joinpath(pwd(), "mbti_star_result.txt")
-    # open(filename2, "w") do f
-    #     write(f, choice_compatibility)
-    # end
-    #println(" Votre résultat MBTI compatible avec vous ( $choice_compatibility) a été enregistré dans '$filename2'.")
+    filename2 = joinpath(pwd(), "mbti_star_result.txt")
+    open(filename2, "w") do f
+        write(f, choice_compatibility)
+    end
+    println(" Votre résultat MBTI compatible avec vous ( $choice_compatibility) a été enregistré dans '$filename2'.")
 
     return mbti, choice_compatibility
     
