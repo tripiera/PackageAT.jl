@@ -1,6 +1,6 @@
 using Bonito
 using Markdown
-include("types_projet.jl")  # Utilisateur, MBTI_COMPATIBILITIES, MBTI_QUESTIONS
+include("types_projet.jl")  # MBTI_QUESTIONS, MBTI_COMPATIBILITIES
 
 const QUESTIONS = [
     ("Quand tu es fatigué(e), tu préfères :", "Sortir voir des amis", "Rester seul(e)", 'E', 'I'),
@@ -43,20 +43,22 @@ function ask_mbti_bonito()
         # --- Boutons ---
         opt1_btn = Button("1")
         opt2_btn = Button("2")
-        compat_btns = [Button("Choix 1", disabled=true), Button("Choix 2", disabled=true), Button("Choix 3", disabled=true)]
+        compat_btns_dynamic = Observable{Vector{Button{String}}}(Vector{Button{String}}())
 
         # --- État ---
         qidx = Ref(0)
         scores = Dict('E'=>0,'I'=>0,'S'=>0,'N'=>0,'T'=>0,'F'=>0,'J'=>0,'P'=>0)
         tie_letters = Dict{Symbol,Union{Char,Nothing}}(:L1=>nothing, :L2=>nothing, :L3=>nothing, :L4=>nothing)
         phase = Ref(:intro)  # :intro, :questions, :tie_*, :choix_compat, :done
+        mbti_value = Observable{String}("")
 
+        # --- Fonctions ---
         function update_question!()
             if qidx[] >= 1 && qidx[] <= length(QUESTIONS)
                 (q,a1,a2,d1,d2) = QUESTIONS[qidx[]]
                 question_text[] = "Question $(qidx[]) / $(length(QUESTIONS)) — $q"
-                opt1_text[] = a1
-                opt2_text[] = a2
+                opt1_text[] = "1. $a1"
+                opt2_text[] = "2. $a2"
                 progress_text[] = "Progression : $(qidx[]) / $(length(QUESTIONS))"
             else
                 handle_end_or_tie!()
@@ -76,15 +78,27 @@ function ask_mbti_bonito()
             if tie_letters[:L3] === nothing; phase[] = :tie_TF; question_text[] = "Égalité T/F — Choisis 1 ou 2"; return end
             if tie_letters[:L4] === nothing; phase[] = :tie_JP; question_text[] = "Égalité J/P — Choisis 1 ou 2"; return end
 
-            # Tout défini : affichage MBTI et activation des boutons compat
+            # Tout défini : on passe à la phase MBTI + compatibilité
             phase[] = :choix_compat
-            mbti = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
-            session[:mbti] = mbti
-            result_text[] = "Ton MBTI : $mbti"
-            descr_text[] = haskey(MBTI_QUESTIONS, mbti) ? join(MBTI_QUESTIONS[mbti], "\n") : "Descriptions non disponibles."
+            mbti_value[] = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
+            result_text[] = "Votre type MBTI : $(mbti_value[])"
 
-            for btn in compat_btns
-                btn.disabled = false
+            # Affichage des questions de préférence MBTI
+            if haskey(MBTI_QUESTIONS, mbti_value[])
+                descr_text[] = join(["- " * q for q in MBTI_QUESTIONS[mbti_value[]]], "\n")
+                # Création boutons dynamiques
+                compat_btns_dynamic[] = [Button(q) for q in MBTI_QUESTIONS[mbti_value[]]]
+                for (i, btn) in enumerate(compat_btns_dynamic[])
+                    local idx = i
+                    on(btn) do _
+                        chosen = MBTI_QUESTIONS[mbti_value[]][idx]
+                        result_text[] = "Votre type MBTI : $(mbti_value[])\nType compatible choisi : $chosen"
+                        phase[] = :done
+                    end
+                end
+            else
+                descr_text[] = "Description non disponible."
+                compat_btns_dynamic[] = []
             end
         end
 
@@ -95,29 +109,51 @@ function ask_mbti_bonito()
                 qidx[] += 1
                 update_question!()
             elseif phase[] in [:tie_EI, :tie_SN, :tie_TF, :tie_JP]
+                # Résolution égalité
                 if phase[] == :tie_EI; tie_letters[:L1] = which==1 ? 'E' : 'I'
                 elseif phase[] == :tie_SN; tie_letters[:L2] = which==1 ? 'S' : 'N'
                 elseif phase[] == :tie_TF; tie_letters[:L3] = which==1 ? 'T' : 'F'
                 elseif phase[] == :tie_JP; tie_letters[:L4] = which==1 ? 'J' : 'P'
                 end
-                handle_end_or_tie!()
-            elseif phase[] == :choix_compat
-                mbti = session[:mbti]
-                compatibles = MBTI_COMPATIBILITIES[mbti]
-                chosen = compatibles[which]
-                result_text[] = "Ton MBTI : $mbti\nMBTI compatible choisi : $chosen"
-                phase[] = :done
+
+                # Vérifier si toutes les lettres sont définies
+                if all(v -> v !== nothing, values(tie_letters))
+                    # Toutes les égalités résolues → calcul MBTI
+                    phase[] = :choix_compat
+                    mbti_value[] = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
+                    result_text[] = "Votre type MBTI : $(mbti_value[])"
+
+                    # Affichage description et boutons compatibilité
+                    if haskey(MBTI_QUESTIONS, mbti_value[])
+                        descr_text[] = join(["- " * q for q in MBTI_QUESTIONS[mbti_value[]]], "\n")
+                        compat_btns_dynamic[] = [Button(q) for q in MBTI_QUESTIONS[mbti_value[]]]
+                        for (i, btn) in enumerate(compat_btns_dynamic[])
+                            local idx = i
+                            on(btn) do _
+                                chosen = MBTI_QUESTIONS[mbti_value[]][idx]
+                                result_text[] = "Votre type MBTI : $(mbti_value[])\nType compatible choisi : $chosen"
+                                phase[] = :done
+                            end
+                        end
+                    else
+                        descr_text[] = "Description non disponible."
+                        compat_btns_dynamic[] = []
+                    end
+                else
+                    # S'il reste d'autres égalités, passer à la prochaine égalité
+                    if tie_letters[:L1] === nothing; phase[] = :tie_EI; question_text[] = "Égalité E/I — Choisis 1 ou 2"; return end
+                    if tie_letters[:L2] === nothing; phase[] = :tie_SN; question_text[] = "Égalité S/N — Choisis 1 ou 2"; return end
+                    if tie_letters[:L3] === nothing; phase[] = :tie_TF; question_text[] = "Égalité T/F — Choisis 1 ou 2"; return end
+                    if tie_letters[:L4] === nothing; phase[] = :tie_JP; question_text[] = "Égalité J/P — Choisis 1 ou 2"; return end
+                end
             end
         end
+
 
         # --- Callbacks ---
         on(opt1_btn) do _; choose_opt(1); end
         on(opt2_btn) do _; choose_opt(2); end
-        for (i, btn) in enumerate(compat_btns)
-            on(btn) do _; choose_opt(i); end
-        end
-
-        on(start_btn) do _ 
+        on(start_btn) do _
             if isempty(name[]) || isempty(firstname[]); info_output[] = "Erreur : nom et prénom requis."; return end
             if isnothing(tryparse(Int, age[])); info_output[] = "Erreur : âge doit être un chiffre."; return end
             qidx[] = 1
@@ -129,14 +165,24 @@ function ask_mbti_bonito()
         # --- Layout ---
         return DOM.div(
             DOM.div("## Informations", name, firstname, age, genre, orientation, start_btn, info_output),
-            DOM.div("## Questionnaire", DOM.div(question_text), DOM.div(opt1_btn,opt1_text), DOM.div(opt2_btn,opt2_text), DOM.div(progress_text)),
-            DOM.div("## Résultat", DOM.div(result_text), DOM.div(descr_text), DOM.div(compat_btns...))
+            DOM.div("## Questionnaire",
+                DOM.div(question_text),
+                DOM.div(opt1_btn,opt1_text),
+                DOM.div(opt2_btn,opt2_text),
+                DOM.div(progress_text)
+            ),
+            DOM.div("## Résultat",
+                DOM.div(result_text),
+                DOM.div(Markdown.MD(descr_text[])),
+                DOM.div(compat_btns_dynamic[])
+            )
         )
     end
 
     return app
 end
 
+# --- Lancer le serveur ---
 app = ask_mbti_bonito()
 server = Bonito.Server(app, "127.0.0.1", 8080)
 route!(server, "/" => app)
