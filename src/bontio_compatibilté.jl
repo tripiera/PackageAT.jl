@@ -102,6 +102,36 @@ function ask_mbti_bonito()
             end
         end
 
+        function show_mbti_result!()
+            mbti_value[] = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
+            result_text[] = "Votre type MBTI : $(mbti_value[])"
+            
+            # Description simple
+            if haskey(MBTI_QUESTIONS, mbti_value[])
+                descr_text[] = "Choisis un type compatible :"
+                
+                # Créer seulement 3 boutons fixes pour compatibilité
+                compat_types = MBTI_COMPATIBILITIES[mbti_value[]]  # supposons que ce soit un Vector{String} de 3 éléments
+                compat_btns_dynamic[] = [Button(string(i)) for (i, _) in enumerate(compat_types)]
+
+                
+                for (i, btn) in enumerate(compat_btns_dynamic[])
+                    local idx = i
+                    on(btn) do _
+                        chosen = compat_types[idx]
+                        result_text[] = "Votre type MBTI : $(mbti_value[])\nType compatible choisi : $chosen"
+                        # On cache les boutons après choix
+                        compat_btns_dynamic[] = []
+                    end
+                end
+            else
+                descr_text[] = "Description non disponible."
+                compat_btns_dynamic[] = []
+            end
+            phase[] = :choix_compat
+        end
+
+
         function choose_opt(which::Int)
             if phase[] == :questions
                 (q,a1,a2,d1,d2) = QUESTIONS[qidx[]]
@@ -118,27 +148,8 @@ function ask_mbti_bonito()
 
                 # Vérifier si toutes les lettres sont définies
                 if all(v -> v !== nothing, values(tie_letters))
-                    # Toutes les égalités résolues → calcul MBTI
-                    phase[] = :choix_compat
-                    mbti_value[] = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
-                    result_text[] = "Votre type MBTI : $(mbti_value[])"
+                    show_mbti_result!()
 
-                    # Affichage description et boutons compatibilité
-                    if haskey(MBTI_QUESTIONS, mbti_value[])
-                        descr_text[] = join(["- " * q for q in MBTI_QUESTIONS[mbti_value[]]], "\n")
-                        compat_btns_dynamic[] = [Button(q) for q in MBTI_QUESTIONS[mbti_value[]]]
-                        for (i, btn) in enumerate(compat_btns_dynamic[])
-                            local idx = i
-                            on(btn) do _
-                                chosen = MBTI_QUESTIONS[mbti_value[]][idx]
-                                result_text[] = "Votre type MBTI : $(mbti_value[])\nType compatible choisi : $chosen"
-                                phase[] = :done
-                            end
-                        end
-                    else
-                        descr_text[] = "Description non disponible."
-                        compat_btns_dynamic[] = []
-                    end
                 else
                     # S'il reste d'autres égalités, passer à la prochaine égalité
                     if tie_letters[:L1] === nothing; phase[] = :tie_EI; question_text[] = "Égalité E/I — Choisis 1 ou 2"; return end
@@ -173,8 +184,9 @@ function ask_mbti_bonito()
             ),
             DOM.div("## Résultat",
                 DOM.div(result_text),
-                DOM.div(Markdown.MD(descr_text[])),
-                DOM.div(compat_btns_dynamic[])
+                DOM.div(Markdown.MD(descr_text)),
+                compat_btns_dynamic
+            
             )
         )
     end

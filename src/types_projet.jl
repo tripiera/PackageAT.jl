@@ -1,5 +1,5 @@
 
-
+#anaide
 abstract type Personne end # ils ont en communs firstname, lastname, age et mbti
 
 mutable struct Star <: Personne
@@ -32,6 +32,25 @@ mutable struct MBTI
     compatibles::Vector{String}            
     message_compatibilite::Dict{String,String} 
 end
+
+const MBTI_TYPES = Dict(
+    "ESTJ" => estj,
+    "ISTJ" => istj,
+    "ESFJ" => esfj,
+    "ISFJ" => isfj,
+    "ESTP" => estp,
+    "ISTP" => istp,
+    "ESFP" => esfp,
+    "ISFP" => isfp,
+    "ENTJ" => entj,
+    "INTJ" => intj,
+    "ENTP" => entp,
+    "INTP" => intp,
+    "ENFJ" => enfj,
+    "INFJ" => infj,
+    "ENFP" => enfp,
+    "INFP" => infp
+)
 
 const MBTI_COMPATIBILITIES = Dict(
     "ESTJ" => ["INFP", "ENFP", "ISTP"],
