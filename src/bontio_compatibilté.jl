@@ -39,6 +39,8 @@ function ask_mbti_bonito()
         progress_text = Observable{String}("")
         result_text = Observable{String}("")
         descr_text = Observable{String}("")
+        compatible_text = Observable{String}("")
+
 
         # --- Boutons ---
         opt1_btn = Button("1")
@@ -79,58 +81,43 @@ function ask_mbti_bonito()
             if tie_letters[:L4] === nothing; phase[] = :tie_JP; question_text[] = "Égalité J/P — Choisis 1 ou 2"; return end
 
             # Tout défini : on passe à la phase MBTI + compatibilité
-            phase[] = :choix_compat
-            mbti_value[] = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
-            result_text[] = "Votre type MBTI : $(mbti_value[])"
-
-            # Affichage des questions de préférence MBTI
-            if haskey(MBTI_QUESTIONS, mbti_value[])
-                descr_text[] = join(["- " * q for q in MBTI_QUESTIONS[mbti_value[]]], "\n")
-                # Création boutons dynamiques
-                compat_btns_dynamic[] = [Button(q) for q in MBTI_QUESTIONS[mbti_value[]]]
-                for (i, btn) in enumerate(compat_btns_dynamic[])
-                    local idx = i
-                    on(btn) do _
-                        chosen = MBTI_QUESTIONS[mbti_value[]][idx]
-                        result_text[] = "Votre type MBTI : $(mbti_value[])\nType compatible choisi : $chosen"
-                        phase[] = :done
-                    end
-                end
-            else
-                descr_text[] = "Description non disponible."
-                compat_btns_dynamic[] = []
-            end
+            show_mbti_result!()
         end
 
         function show_mbti_result!()
             mbti_value[] = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
             result_text[] = "Votre type MBTI : $(mbti_value[])"
-            
-            # Description simple
-            if haskey(MBTI_QUESTIONS, mbti_value[])
-                descr_text[] = "Choisis un type compatible :"
-                
-                # Créer seulement 3 boutons fixes pour compatibilité
-                compat_types = MBTI_COMPATIBILITIES[mbti_value[]]  # supposons que ce soit un Vector{String} de 3 éléments
-                compat_btns_dynamic[] = [Button(string(i)) for (i, _) in enumerate(compat_types)]
+            compatible_text[] = ""  # vide au départ
 
-                
+            # Description du MBTI
+            if haskey(MBTI_QUESTIONS, mbti_value[])
+                descr_text[] = join(["- " * q for q in MBTI_QUESTIONS[mbti_value[]]], "\n")
+            else
+                descr_text[] = "Description non disponible."
+            end
+
+            # Boutons compatibilité
+            if haskey(MBTI_COMPATIBILITIES, mbti_value[])
+                compat_types = MBTI_COMPATIBILITIES[mbti_value[]]
+
+                # Créer les boutons dynamiques
+                compat_btns_dynamic[] = [Button(t) for t in compat_types]
+
+                # Ajouter le callback pour chaque bouton
                 for (i, btn) in enumerate(compat_btns_dynamic[])
                     local idx = i
                     on(btn) do _
                         chosen = compat_types[idx]
-                        result_text[] = "Votre type MBTI : $(mbti_value[])\nType compatible choisi : $chosen"
-                        # On cache les boutons après choix
-                        compat_btns_dynamic[] = []
+                        compatible_text[] = "Type compatible avec vous : $chosen"  # texte mis à jour correctement
+                        phase[] = :done
                     end
                 end
             else
-                descr_text[] = "Description non disponible."
                 compat_btns_dynamic[] = []
             end
+
             phase[] = :choix_compat
         end
-
 
         function choose_opt(which::Int)
             if phase[] == :questions
@@ -185,8 +172,12 @@ function ask_mbti_bonito()
             DOM.div("## Résultat",
                 DOM.div(result_text),
                 DOM.div(Markdown.MD(descr_text)),
-                compat_btns_dynamic
-            
+                # boutons dynamiques
+                map(compat_btns_dynamic) do btns
+                    DOM.div([btn for btn in btns]...)
+                end,
+                # texte sélectionné après clic
+                DOM.div(compatible_text)
             )
         )
     end
