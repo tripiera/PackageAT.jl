@@ -1,11 +1,10 @@
 using Bonito
 using Markdown
-
 include("types_projet.jl")  # Utilisateur, MBTI_COMPATIBILITIES, MBTI_QUESTIONS
 
 const QUESTIONS = [
     ("Quand tu es fatigué(e), tu préfères :", "Sortir voir des amis", "Rester seul(e)", 'E', 'I'),
-    ("En soirée, tu :", "Adores parler à plein de monde", "Préfères discuter avec une ou deux personnes", 'E', 'I'),
+    ("En soirée, tu :", "Adores parler à plein de monde", "Tu préfères discuter avec une ou deux personnes", 'E', 'I'),
     ("Quand tu rencontres quelqu’un de nouveau :", "Tu engages facilement la conversation", "Tu attends qu’on te parle", 'E', 'I'),
     ("Au travail ou en groupe :", "Tu t’exprimes spontanément", "Tu réfléchis avant de parler", 'E', 'I'),
     ("Tu te fies plutôt à :", "Ton expérience passée", "Ton intuition", 'S', 'N'),
@@ -44,13 +43,13 @@ function ask_mbti_bonito()
         # --- Boutons ---
         opt1_btn = Button("1")
         opt2_btn = Button("2")
-        compat_btns = [Button("Choix 1"), Button("Choix 2"), Button("Choix 3")]
+        compat_btns = [Button("Choix 1", disabled=true), Button("Choix 2", disabled=true), Button("Choix 3", disabled=true)]
 
         # --- État ---
         qidx = Ref(0)
         scores = Dict('E'=>0,'I'=>0,'S'=>0,'N'=>0,'T'=>0,'F'=>0,'J'=>0,'P'=>0)
-        tie_letters = Dict{Symbol,Char}()
-        phase = Ref(:intro)  # :intro, :questions, :tie, :compat, :choix_compat, :done
+        tie_letters = Dict{Symbol,Union{Char,Nothing}}(:L1=>nothing, :L2=>nothing, :L3=>nothing, :L4=>nothing)
+        phase = Ref(:intro)  # :intro, :questions, :tie_*, :choix_compat, :done
 
         function update_question!()
             if qidx[] >= 1 && qidx[] <= length(QUESTIONS)
@@ -60,43 +59,32 @@ function ask_mbti_bonito()
                 opt2_text[] = a2
                 progress_text[] = "Progression : $(qidx[]) / $(length(QUESTIONS))"
             else
-                question_text[] = ""
-                opt1_text[] = ""
-                opt2_text[] = ""
-                progress_text[] = ""
                 handle_end_or_tie!()
             end
         end
 
         function handle_end_or_tie!()
-            # Départage égalités
+            # Calcul des lettres MBTI
             tie_letters[:L1] = scores['E'] != scores['I'] ? (scores['E']>scores['I'] ? 'E' : 'I') : nothing
             tie_letters[:L2] = scores['S'] != scores['N'] ? (scores['S']>scores['N'] ? 'S' : 'N') : nothing
             tie_letters[:L3] = scores['T'] != scores['F'] ? (scores['T']>scores['F'] ? 'T' : 'F') : nothing
             tie_letters[:L4] = scores['J'] != scores['P'] ? (scores['J']>scores['P'] ? 'J' : 'P') : nothing
 
-            if tie_letters[:L1] === nothing
-                phase[] = :tie_EI; question_text[] = "Egalité E/I — Choisis 1 ou 2"; return
-            end
-            if tie_letters[:L2] === nothing
-                phase[] = :tie_SN; question_text[] = "Egalité S/N — Choisis 1 ou 2"; return
-            end
-            if tie_letters[:L3] === nothing
-                phase[] = :tie_TF; question_text[] = "Egalité T/F — Choisis 1 ou 2"; return
-            end
-            if tie_letters[:L4] === nothing
-                phase[] = :tie_JP; question_text[] = "Egalité J/P — Choisis 1 ou 2"; return
-            end
+            # Gestion des égalités
+            if tie_letters[:L1] === nothing; phase[] = :tie_EI; question_text[] = "Égalité E/I — Choisis 1 ou 2"; return end
+            if tie_letters[:L2] === nothing; phase[] = :tie_SN; question_text[] = "Égalité S/N — Choisis 1 ou 2"; return end
+            if tie_letters[:L3] === nothing; phase[] = :tie_TF; question_text[] = "Égalité T/F — Choisis 1 ou 2"; return end
+            if tie_letters[:L4] === nothing; phase[] = :tie_JP; question_text[] = "Égalité J/P — Choisis 1 ou 2"; return end
 
-            # Tout défini
-            phase[] = :compat
+            # Tout défini : affichage MBTI et activation des boutons compat
+            phase[] = :choix_compat
             mbti = string(tie_letters[:L1], tie_letters[:L2], tie_letters[:L3], tie_letters[:L4])
             session[:mbti] = mbti
             result_text[] = "Ton MBTI : $mbti"
-            if haskey(MBTI_QUESTIONS, mbti)
-                descr_text[] = join(MBTI_QUESTIONS[mbti], "\n")
-            else
-                descr_text[] = "Descriptions non disponibles."
+            descr_text[] = haskey(MBTI_QUESTIONS, mbti) ? join(MBTI_QUESTIONS[mbti], "\n") : "Descriptions non disponibles."
+
+            for btn in compat_btns
+                btn.disabled = false
             end
         end
 
@@ -129,13 +117,9 @@ function ask_mbti_bonito()
             on(btn) do _; choose_opt(i); end
         end
 
-        on(start_btn) do _
-            if isempty(name[]) || isempty(firstname[])
-                info_output[] = "Erreur : nom et prénom requis."; return
-            end
-            if isnothing(tryparse(Int, age[]))
-                info_output[] = "Erreur : âge doit être un chiffre."; return
-            end
+        on(start_btn) do _ 
+            if isempty(name[]) || isempty(firstname[]); info_output[] = "Erreur : nom et prénom requis."; return end
+            if isnothing(tryparse(Int, age[])); info_output[] = "Erreur : âge doit être un chiffre."; return end
             qidx[] = 1
             phase[] = :questions
             update_question!()

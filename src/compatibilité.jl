@@ -1,6 +1,7 @@
 using DataFrames
 using CSV
 include("types_projet.jl")
+#anaide
 #pour créer ma fonction de compatibilité
 
 # récupérations des données utilisateurs via machine pour le questionnaire
