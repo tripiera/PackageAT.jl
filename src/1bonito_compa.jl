@@ -185,7 +185,4 @@ function ask_mbti_bonito()
     return app
 end
 
-# --- Lancer le serveur ---
-app = ask_mbti_bonito()
-server = Bonito.Server(app, "127.0.0.1", 8080)
-route!(server, "/" => app)
+

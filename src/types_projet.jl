@@ -33,24 +33,6 @@ mutable struct MBTI
     message_compatibilite::Dict{String,String} 
 end
 
-const MBTI_TYPES = Dict(
-    "ESTJ" => estj,
-    "ISTJ" => istj,
-    "ESFJ" => esfj,
-    "ISFJ" => isfj,
-    "ESTP" => estp,
-    "ISTP" => istp,
-    "ESFP" => esfp,
-    "ISFP" => isfp,
-    "ENTJ" => entj,
-    "INTJ" => intj,
-    "ENTP" => entp,
-    "INTP" => intp,
-    "ENFJ" => enfj,
-    "INFJ" => infj,
-    "ENFP" => enfp,
-    "INFP" => infp
-)
 
 const MBTI_COMPATIBILITIES = Dict(
     "ESTJ" => ["INFP", "ENFP", "ISTP"],
@@ -336,4 +318,23 @@ const MBTI_QUESTIONS = Dict(
         "Préférerais-tu quelqu'un de ISTP : calme, pratique et analytique ?",
         "Préférerais-tu quelqu'un de ENFP : enthousiaste, sociable et imaginatif ?"
     ]
+)
+
+const MBTI_TYPES = Dict(
+    "ESTJ" => estj,
+    "ISTJ" => istj,
+    "ESFJ" => esfj,
+    "ISFJ" => isfj,
+    "ESTP" => estp,
+    "ISTP" => istp,
+    "ESFP" => esfp,
+    "ISFP" => isfp,
+    "ENTJ" => entj,
+    "INTJ" => intj,
+    "ENTP" => entp,
+    "INTP" => intp,
+    "ENFJ" => enfj,
+    "INFJ" => infj,
+    "ENFP" => enfp,
+    "INFP" => infp
 )
