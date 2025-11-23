@@ -21,7 +21,7 @@ const QUESTIONS = [
     ("Les règles :", "Sont faites pour être respectées", "Sont faites pour être adaptées", 'J', 'P')
 ]
 
-function ask_mbti_bonito()
+function ask_mbti_bonito2()
     app = App() do session
         # --- Infos utilisateur ---
         name = TextField("", Dict(:placeholder=>"Nom"))
@@ -182,10 +182,9 @@ function ask_mbti_bonito()
         )
     end
 
+    #completer
+
     return app
 end
 
-# --- Lancer le serveur ---
-app = ask_mbti_bonito()
-server = Bonito.Server(app, "127.0.0.1", 8080)
-route!(server, "/" => app)
+
