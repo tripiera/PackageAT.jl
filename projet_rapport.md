@@ -1,0 +1,24 @@
+# New Book
+
+# Rapport projet Julia
+
+
+## Le projet
+Le but de ce projet était de créer une interface graphique qui nous renvoie la star avec laquelle on est compatible en julia. 
+Pour cela nous nous sommes basés sur les 16 types mbti : ils caractérisent notre personnalité selon un questionnaire. Il est devenu très populaire et répendu dans le monde, c'est pourquoi on connait le type mbti de la majorité des stars. 
+On a essayé de recréer un mini test mbti car le vrai dure vraiment très longtemps.
+
+## Le plan
+- créer notre base de données de star avec leur mbti
+- définir les types utiles à notre code 
+- récupérer les données de l'utilisateur ( nom, prénom, âge, type de mbti,... )
+- trouver le mbti compatible avec l'utilisateur
+- trouver la star associé au mbti compatible avec l'utilisateur selon certains critères
+- affichage graphique
+
+
+## 1 La base de donnée des stars
+Nous avons décidé de créer notre base de données sous format csv. Nous avons premièrement essayé de remplir nos données à la main mais c'était trop coûteux en temps donc nous avons demandé à chatgpt de nous remplir suffisament de lignes pour avoir une homogénéité de star (sexualités et personnalités nombreuses et diffférentes) .
+
+
+
