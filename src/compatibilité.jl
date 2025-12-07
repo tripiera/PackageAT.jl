@@ -226,8 +226,14 @@ function ask_mbti_questions()
 
     
     #######
+    project_root = dirname(@__DIR__)
+    filepath = joinpath(project_root, "exemple", "resultcompabilite_typesmbti")
+    mkpath(filepath)
 
-    filename = joinpath(pwd(), "mbti_result.txt")
+    filename  = joinpath(filepath, "mbti_result.txt")
+    
+
+
     open(filename, "w") do f
         write(f, mbti)
     end
@@ -261,7 +267,9 @@ function ask_mbti_questions()
     println("\nTu pourrais envisager une personne de type MBTI : $choice_compatibility")
 
 
-    filename2 = joinpath(pwd(), "mbti_star_result.txt")
+   
+    filename2 = joinpath(filepath, "mbti_star_result.txt")
+
     open(filename2, "w") do f
         write(f, choice_compatibility)
     end
