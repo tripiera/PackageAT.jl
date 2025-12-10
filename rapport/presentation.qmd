@@ -4,12 +4,13 @@ author: "Tripier Anaïde"
 format: revealjs
 theme: night
 slide-number: true
+
 ---
-#  
-
-<img src="img/image1.jpg" style="width:50%; display:block; margin:40px auto;">
-
-
+# 
+<div style="text-align:center; margin-top: 40px;">
+<p><img src="img/image1.jpg" style="width:45%;"></p>
+</div>
+</section>
 
 ---
 
