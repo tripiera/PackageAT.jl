@@ -5,11 +5,10 @@ format: revealjs
 theme: night
 slide-number: true
 ---
+#  
 
-<!-- Image d'introduction -->
-<div style="text-align:center; margin-top: 40px;">
-  <img src="img/image1.jpg" style="width:60%;">
-</div>
+<img src="img/image1.jpg" style="width:50%; display:block; margin:40px auto;">
+
 
 
 ---
