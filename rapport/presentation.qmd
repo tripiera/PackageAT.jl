@@ -4,11 +4,11 @@ author: "Tripier Anaïde"
 format: revealjs
 theme: night
 slide-number: true
-
+---
 
 <!-- Image d'introduction -->
 <div style="text-align:center; margin-top: 40px;">
-  <img src="img/image1.jpg" style="width:45%;">
+  <img src="img/image1.jpg" style="width:60%;">
 </div>
 
 
