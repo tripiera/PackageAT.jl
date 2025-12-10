@@ -2,14 +2,16 @@ module PackageAT
 
 using DataFrames
 using CSV
-export ask_mbti_questions
-include("types_projet.jl")
-include("compatibilité.jl")
-include("1bonito_compa.jl")
-include("final_bonito.jl")
-include("trouver_match.jl")
-include("calcul_compatibilite.jl")
+export ask_mbti_questions, Star, Utilisateur, MBTI, ask_mbti_bonito
 
-# Write your package code here.
+
+include(joinpath(@__DIR__, "types_projet.jl"))
+include(joinpath(@__DIR__, "compatibilité.jl"))
+include(joinpath(@__DIR__, "1bonito_compa.jl"))
+include(joinpath(@__DIR__, "final_bonito.jl"))
+include(joinpath(@__DIR__, "trouver_match.jl"))
+include(joinpath(@__DIR__, "calcul_compatibilite.jl"))
+
+
 
 end
