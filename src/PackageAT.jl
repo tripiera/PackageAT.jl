@@ -1,8 +1,11 @@
 module PackageAT
 
+using Markdown 
+using Bonito
 using DataFrames
 using CSV
-export ask_mbti_questions, Star, Utilisateur, MBTI, ask_mbti_bonito
+
+export ask_mbti_questions, Star, Utilisateur, MBTI
 
 
 include(joinpath(@__DIR__, "types_projet.jl"))
