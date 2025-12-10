@@ -1,0 +1,121 @@
+---
+title: "Projet MBTI – Star Compatibility"
+author: "Tripier Anaïde"
+format: revealjs
+theme: night
+slide-number: true
+
+
+<!-- Image d'introduction -->
+<div style="text-align:center; margin-top: 40px;">
+  <img src="img/image1.jpg" style="width:45%;">
+</div>
+
+
+---
+
+# Introduction
+
+### Objectif du projet
+
+Créer une application Julia qui :
+- détermine le type MBTI d’un utilisateur  
+- trouve les MBTI compatibles  
+- associe une star compatible  
+- utilise une interface graphique (Bonito.jl)
+
+---
+
+# Plan du projet
+
+0. C’est quoi un MBTI ?  
+1. Base de données des stars  
+2. Types Julia (Star, Utilisateur, MBTI)  
+3. Questionnaire MBTI (console)  
+4. Questionnaire graphique (Bonito.jl)  
+5. Algorithme de compatibilité  
+6. Démo finale  
+
+---
+
+# C'est quoi le MBTI ?
+
+Le MBTI est une **combinaison de 4 lettres** représentant nos préférences psychologiques.  
+En combinant ces 4 dimensions, on obtient les **16 types de personnalité**.
+
+---
+
+## Les 4 dimensions du MBTI
+
+- **E** (Extraversion) / **I** (Introversion)  
+- **S** (Sensation) / **N** (iNtuition)  
+- **T** (Thinking) / **F** (Feeling)  
+- **J** (Jugement) / **P** (Perceiving)
+
+**Exemples de résultats :**  
+INTJ, ENFP, ESTJ, ISFJ, …
+
+---
+
+# Base de données
+
+- Fichier `.csv`  
+- ~50 stars  
+- Variables conservées :
+
+  - nom  
+  - prénom  
+  - âge  
+  - profession  
+  - genre  
+  - orientation sexuelle  
+  - MBTI  
+
+---
+
+# Les types Julia utilisés
+
+- `Personne`
+- `Star`
+- `Utilisateur`
+- `MBTI`
+- `MBTI_COMPATIBILITIES`
+- `MBTI_QUESTIONS`
+
+---
+
+# Le questionnaire (version console)
+
+### Étapes :
+
+1. **Récupération** des informations utilisateur  
+2. Détermination du **MBTI** via 16 questions  
+3. Récupération des **3 MBTI compatibles**  
+4. Nouvelle question pour que l’utilisateur choisisse l’un des 3 (ou hasard)  
+5. **Affichage des résultats**
+
+---
+
+# Le questionnaire (interface graphique)
+
+### Avec Bonito.jl
+
+- Formulaire interactif  
+- Questions cliquables  
+- Affichage dynamique du type MBTI  
+- Sélection des compatibilités  
+- Résultat final en direct  
+
+---
+
+# Algorithme de compatibilité
+
+*(Slide remplie par Amine)*
+
+---
+
+# Démo
+
+---
+
+# Merci de votre attention 
