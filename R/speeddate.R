@@ -13,7 +13,7 @@ stars <- data.frame(
 
 # ---- Interface utilisateur ----
 ui <- dashboardPage(
-  dashboardHeader(title = "💘 SpeedDating de Stars 💫"),
+  dashboardHeader(title = "SpeedDating de Stars "),
   
   dashboardSidebar(
     sidebarMenu(
@@ -30,21 +30,21 @@ ui <- dashboardPage(
       tabItem(tabName = "quiz",
               fluidRow(
                 box(
-                  title = "Tes réponses 💭", status = "primary", solidHeader = TRUE, width = 4,
+                  title = "Tes réponses ", status = "primary", solidHeader = TRUE, width = 4,
                   sliderInput("humour", "Tu aimes l'humour ?", 1, 5, 3),
                   sliderInput("sport", "Tu es sportif(ve) ?", 1, 5, 3),
                   sliderInput("musique", "Tu adores la musique ?", 1, 5, 3),
                   sliderInput("voyages", "Tu aimes voyager ?", 1, 5, 3),
-                  actionButton("go", "Voir mes compatibilités 💞", class = "btn-success")
+                  actionButton("go", "Voir mes compatibilités ", class = "btn-success")
                 ),
                 box(
                   title = "Aperçu des stars", status = "info", solidHeader = TRUE, width = 8,
-                  p("🪩 Rencontre avec nos stars disponibles :"),
+                  p("Rencontre avec nos stars disponibles :"),
                   tags$ul(
-                    tags$li("🌟 Zendaya – drôle, aime voyager et la musique"),
-                    tags$li("🎬 Timothée Chalamet – artiste passionné, aime le sport"),
-                    tags$li("🎤 Taylor Swift – romantique et mélomane"),
-                    tags$li("💪 Ryan Gosling – sportif et plein d’humour")
+                    tags$li("Zendaya – drôle, aime voyager et la musique"),
+                    tags$li("Timothée Chalamet – artiste passionné, aime le sport"),
+                    tags$li("Taylor Swift – romantique et mélomane"),
+                    tags$li("Ryan Gosling – sportif et plein d’humour")
                   )
                 )
               )
@@ -64,7 +64,7 @@ ui <- dashboardPage(
               ),
               fluidRow(
                 box(
-                  title = "Ta star la plus compatible 💖", width = 12, status = "success", solidHeader = TRUE,
+                  title = "Ta star la plus compatible ", width = 12, status = "success", solidHeader = TRUE,
                   h3(textOutput("best_star"), align = "center")
                 )
               )
@@ -108,14 +108,14 @@ server <- function(input, output) {
     barplot(resultat()$Compatibilité, names.arg = resultat()$Star,
             col = c("hotpink", "skyblue", "lightgreen", "orange"),
             ylim = c(0, 100),
-            main = "Compatibilité avec les stars 💞",
+            main = "Compatibilité avec les stars",
             ylab = "Compatibilité (%)")
   })
   
   output$best_star <- renderText({
     req(resultat())
     best <- resultat()[which.max(resultat()$Compatibilité), "Star"]
-    paste("💘 Ta star la plus compatible est :", best, "!")
+    paste("Ta star la plus compatible est :", best, "!")
   })
 }
 
