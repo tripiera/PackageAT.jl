@@ -5,8 +5,7 @@ using Bonito
 using DataFrames
 using CSV
 
-export ask_mbti_questions, Star, Utilisateur, MBTI
-
+export ask_mbti_questions, Star, Utilisateur, MBTI, ask_mbti_bonito
 
 include(joinpath(@__DIR__, "types_projet.jl"))
 include(joinpath(@__DIR__, "compatibilité.jl"))
