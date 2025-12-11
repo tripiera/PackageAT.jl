@@ -235,7 +235,7 @@ function ask_mbti_questions()
 
     ####maintenant qu'on a notre mbti  je vais regarder avec qui il est compatible.
     ####  j'ai deja definie avec qui chaque mbti est compatible dans mon dictionnaire qui se trouve dans types_projet.jl
-    #### chaqque mbti est compatible avec 3 autres.
+    #### chaque mbti est compatible avec 3 autres.
     #### je vais donc rajouter une question à l'utilisateur si il a des préferences en fonction des mbti compatibles
     compatibles = MBTI_COMPATIBILITIES[mbti]
     questions_descriptives = MBTI_QUESTIONS[mbti]
