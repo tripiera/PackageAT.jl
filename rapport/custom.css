@@ -1,0 +1,18 @@
+/* Fond global */
+.reveal {
+  background-color: #ffd6e7; 
+}
+
+/* Fond de chaque slide */
+.reveal .slides section {
+  background-color: #ffe3ef; 
+  color: #000000; 
+}
+
+/* Couleur des titres */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4 {
+  color: #000000 !important; 
+}

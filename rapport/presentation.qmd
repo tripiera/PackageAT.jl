@@ -1,30 +1,33 @@
 ---
 title: "Projet MBTI – Star Compatibility"
-author: "Tripier Anaïde"
-format: revealjs
+author: "Tripier Anaïde M1 SSD"
+format:
+  revealjs:
+    theme: night
+    slide-number: true
+    css: custom.css
+
 theme: night
-slide-number: true
 
 ---
-# 
+
+## Avec qui êtes-vous compatible ? 
 <div style="text-align:center; margin-top: 40px;">
-<p><img src="img/image1.jpg" style="width:45%;"></p>
+<p><img src="img/image1.jpg" style="width:40%;"></p>
 </div>
-</section>
 
----
+
 
 # Introduction
 
-### Objectif du projet
-
 Créer une application Julia qui :
+
 - détermine le type MBTI d’un utilisateur  
 - trouve les MBTI compatibles  
 - associe une star compatible  
 - utilise une interface graphique (Bonito.jl)
 
----
+
 
 # Plan du projet
 
@@ -36,14 +39,13 @@ Créer une application Julia qui :
 5. Algorithme de compatibilité  
 6. Démo finale  
 
----
 
 # C'est quoi le MBTI ?
 
 Le MBTI est une **combinaison de 4 lettres** représentant nos préférences psychologiques.  
 En combinant ces 4 dimensions, on obtient les **16 types de personnalité**.
 
----
+
 
 ## Les 4 dimensions du MBTI
 
@@ -55,7 +57,7 @@ En combinant ces 4 dimensions, on obtient les **16 types de personnalité**.
 **Exemples de résultats :**  
 INTJ, ENFP, ESTJ, ISFJ, …
 
----
+
 
 # Base de données
 
@@ -71,7 +73,6 @@ INTJ, ENFP, ESTJ, ISFJ, …
   - orientation sexuelle  
   - MBTI  
 
----
 
 # Les types Julia utilisés
 
@@ -82,11 +83,8 @@ INTJ, ENFP, ESTJ, ISFJ, …
 - `MBTI_COMPATIBILITIES`
 - `MBTI_QUESTIONS`
 
----
 
 # Le questionnaire (version console)
-
-### Étapes :
 
 1. **Récupération** des informations utilisateur  
 2. Détermination du **MBTI** via 16 questions  
@@ -94,11 +92,11 @@ INTJ, ENFP, ESTJ, ISFJ, …
 4. Nouvelle question pour que l’utilisateur choisisse l’un des 3 (ou hasard)  
 5. **Affichage des résultats**
 
----
 
-# Le questionnaire (interface graphique)
 
-### Avec Bonito.jl
+# Le questionnaire (avec Bonito)
+
+Même logique que la verion console mais avec quelques changements : 
 
 - Formulaire interactif  
 - Questions cliquables  
@@ -106,16 +104,17 @@ INTJ, ENFP, ESTJ, ISFJ, …
 - Sélection des compatibilités  
 - Résultat final en direct  
 
----
 
 # Algorithme de compatibilité
 
 *(Slide remplie par Amine)*
 
----
+
 
 # Démo
 
----
 
 # Merci de votre attention 
+<div style="text-align:center; margin-top: 20px;">
+  <img src="img/star.jpg" style="width:30%;">
+</div>

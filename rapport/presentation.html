@@ -9,7 +9,7 @@
 <link href="presentation_files/libs/quarto-html/quarto-syntax-highlighting-dark-b651517ce65839d647a86e2780455cfb.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.8.24">
 
-  <meta name="author" content="Tripier Anaïde">
+  <meta name="author" content="Tripier Anaïde M1 SSD">
   <title>Projet MBTI – Star Compatibility</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -30,6 +30,7 @@
     }
   </style>
   <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/theme/quarto-73806f0e93c0950b605bb3afe7220856.css">
+  <link rel="stylesheet" href="custom.css">
   <link href="presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="presentation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -132,39 +133,34 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Tripier Anaïde 
+Tripier Anaïde M1 SSD 
 </div>
 </div>
 </div>
 
 </section>
-<section>
-<section id="section" class="title-slide slide level1 center">
-<h1></h1>
+<section id="avec-qui-êtes-vous-compatible" class="slide level2">
+<h2>Avec qui êtes-vous compatible ?</h2>
 <div style="text-align:center; margin-top: 40px;">
 <p>
-<img src="img/image1.jpg" style="width:45%;">
+<img src="img/image1.jpg" style="width:40%;">
 </p>
 </div>
 </section>
-</section>
-<section class="slide level2">
-
-</section>
-<section>
 <section id="introduction" class="title-slide slide level1 center">
 <h1>Introduction</h1>
-
+<p>Créer une application Julia qui :</p>
+<ul>
+<li>détermine le type MBTI d’un utilisateur<br>
+</li>
+<li>trouve les MBTI compatibles<br>
+</li>
+<li>associe une star compatible<br>
+</li>
+<li>utilise une interface graphique (Bonito.jl)</li>
+</ul>
 </section>
-<h3 id="objectif-du-projet">Objectif du projet</h3>
-<p>Créer une application Julia qui : - détermine le type MBTI d’un utilisateur<br>
-- trouve les MBTI compatibles<br>
-- associe une star compatible<br>
-- utilise une interface graphique (Bonito.jl)</p>
-<section class="slide level2">
 
-</section></section>
-<section>
 <section id="plan-du-projet" class="title-slide slide level1 center">
 <h1>Plan du projet</h1>
 <ol start="0" type="1">
@@ -183,9 +179,7 @@ Tripier Anaïde
 <li>Démo finale</li>
 </ol>
 </section>
-<section class="slide level2">
 
-</section></section>
 <section>
 <section id="cest-quoi-le-mbti" class="title-slide slide level1 center">
 <h1>C’est quoi le MBTI ?</h1>
@@ -205,11 +199,7 @@ En combinant ces 4 dimensions, on obtient les <strong>16 types de personnalité<
 </ul>
 <p><strong>Exemples de résultats :</strong><br>
 INTJ, ENFP, ESTJ, ISFJ, …</p>
-</section>
-<section class="slide level2">
-
 </section></section>
-<section>
 <section id="base-de-données" class="title-slide slide level1 center">
 <h1>Base de données</h1>
 <ul>
@@ -235,10 +225,7 @@ INTJ, ENFP, ESTJ, ISFJ, …</p>
 </ul></li>
 </ul>
 </section>
-<section class="slide level2">
 
-</section></section>
-<section>
 <section id="les-types-julia-utilisés" class="title-slide slide level1 center">
 <h1>Les types Julia utilisés</h1>
 <ul>
@@ -250,15 +237,9 @@ INTJ, ENFP, ESTJ, ISFJ, …</p>
 <li><code>MBTI_QUESTIONS</code></li>
 </ul>
 </section>
-<section class="slide level2">
 
-</section></section>
-<section>
 <section id="le-questionnaire-version-console" class="title-slide slide level1 center">
 <h1>Le questionnaire (version console)</h1>
-
-</section>
-<h3 id="étapes">Étapes :</h3>
 <ol type="1">
 <li><strong>Récupération</strong> des informations utilisateur<br>
 </li>
@@ -270,15 +251,11 @@ INTJ, ENFP, ESTJ, ISFJ, …</p>
 </li>
 <li><strong>Affichage des résultats</strong></li>
 </ol>
-<section class="slide level2">
-
-</section></section>
-<section>
-<section id="le-questionnaire-interface-graphique" class="title-slide slide level1 center">
-<h1>Le questionnaire (interface graphique)</h1>
-
 </section>
-<h3 id="avec-bonito.jl">Avec Bonito.jl</h3>
+
+<section id="le-questionnaire-avec-bonito" class="title-slide slide level1 center">
+<h1>Le questionnaire (avec Bonito)</h1>
+<p>Même logique que la verion console mais avec quelques changements :</p>
 <ul>
 <li>Formulaire interactif<br>
 </li>
@@ -290,27 +267,23 @@ INTJ, ENFP, ESTJ, ISFJ, …</p>
 </li>
 <li>Résultat final en direct</li>
 </ul>
-<section class="slide level2">
+</section>
 
-</section></section>
-<section>
 <section id="algorithme-de-compatibilité" class="title-slide slide level1 center">
 <h1>Algorithme de compatibilité</h1>
 <p><em>(Slide remplie par Amine)</em></p>
 </section>
-<section class="slide level2">
 
-</section></section>
-<section>
 <section id="démo" class="title-slide slide level1 center">
 <h1>Démo</h1>
 
 </section>
-<section class="slide level2">
 
-</section></section>
 <section id="merci-de-votre-attention" class="title-slide slide level1 center">
 <h1>Merci de votre attention</h1>
+<div style="text-align:center; margin-top: 20px;">
+<p><img src="img/star.jpg" style="width:30%;"></p>
+</div>
 
 </section>
     </div>
