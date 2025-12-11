@@ -286,9 +286,577 @@ return DOM.div(
 ```
 Grâce à Bonito.jl, le test MBTI a pu être transformé en une application web interactive, plus intuitive que la version console. L’utilisateur peut saisir ses informations, répondre aux questions par clics, visualiser son type MBTI et choisir un profil compatible de manière totalement graphique.
 
-## 5 Trouver la star compatible avec l'utilisateur
+## 5 Trouver la star compatible avec l'utilisa
 
-//à completer ici amine // rshiny ahmed
+## 5. Trouver la star compatible avec l'utilisateur
+
+Dans cette partie, nous utilisons toute la mécanique définie précédemment (types Julia, dictionnaires MBTI, fonctions de compatibilité, etc.) pour construire un **pipeline complet** qui part des réponses de l'utilisateur et aboutit au nom de la star la plus compatible.
+
+L'objectif de ce module est donc :
+- de lancer le questionnaire MBTI en console,
+- de récupérer le type MBTI de l'utilisateur et le type qu'il préfère chez les stars,
+- de charger les données des célébrités depuis le fichier CSV nettoyé,
+- de calculer un score de compatibilité pour chaque star,
+- puis d'afficher la meilleure correspondance de manière lisible (texte + graphique).
+
+Tout cela est orchestré dans un script unique, `runcompatibilite0.jl`, dont voici la structure principale.
+
+```julia (editor=true, logging=false, output=true)
+#########################################################
+# Amine
+# runcompatibilite0.jl – Lancer le test de compatibilité
+# VERSION STABLE – Questionnaire MBTI + compatibilité stars
+#########################################################
+
+# Chemin racine du projet (pour inclure correctement les modules et CSV)
+root = joinpath(dirname(@__FILE__), "..")
+
+# On charge directement les modules internes
+include(joinpath(root, "src/types_projet.jl"))
+include(joinpath(root, "src/compatibilité.jl"))
+include(joinpath(root, "src/calcul_compatibilite.jl"))
+include(joinpath(root, "graphique/graphique_coeur.jl"))
+
+println("=== TEST DE COMPATIBILITÉ ===\n")
+
+#########################################################
+# Étape 1 : Questionnaire MBTI
+#########################################################
+
+user_mbti, mbti_compatible, utili = ask_mbti_questions()
+
+mbti_user = chomp(read(joinpath(root, "mbti_result.txt"), String))
+mbti_star = chomp(read(joinpath(root, "mbti_star_result.txt"), String))
+
+println("\n Ton type MBTI : $mbti_user")
+println(" Type préféré chez les stars : $mbti_star")
+
+#########################################################
+# Étape 2 : Information utilisateur
+#########################################################
+
+user = utili
+println("\n Utilisateur chargé : $(user.firstname) $(user.lastname), $(user.age) ans, $(user.orientation), genre $(user.genre)")
+
+#########################################################
+# Étape 3 : Chargement du CSV
+#########################################################
+
+println("\n Chargement des célébrités...")
+csv_path = joinpath(root, "data", "base_stars_clean.csv")
+
+if !isfile(csv_path)
+    error(" ERREUR : Le fichier CSV n'existe pas : $csv_path")
+end
+
+stars = charger_stars(csv_path)
+
+#########################################################
+# Étape 4 : Calcul compatibilité
+#########################################################
+
+println("\n Calcul en cours...\n")
+resultats = trouver_meilleures_compatibilites(user, stars)
+
+#########################################################
+# Étape 5 : Résultat final
+#########################################################
+
+if isempty(resultats)
+    println("\n Aucun match trouvé selon ton orientation et ton genre ")
+else
+    top_star, top_score = resultats[1]
+
+    println("\n Star la plus compatible : $(top_star.firstname) $(top_star.lastname)")
+    println("  Score total : $(top_score)%")
+
+    afficher_coeur(top_score, "$(top_star.firstname) $(top_star.lastname)")
+
+    println("\n Fin du programme ")
+end
+```
+
+Ce script est le point d'entrée principal côté Julia : il assemble toutes les briques fonctionnelles du projet et produit un résultat complet, du questionnaire utilisateur jusqu'à l'affichage graphique de la star sélectionnée.
+
+---
+
+## 5.1 Le calcul de compatibilité (MBTI, orientation, âge)
+
+Pour que le score reflète au mieux la « plausibilité » d'une compatibilité, nous avons défini une fonction de score structurée en trois composantes principales :
+- une composante **MBTI** (personnalité),
+- une composante **orientation / genre** (attirance mutuelle),
+- une composante **âge** (proximité générationnelle).
+
+Tout ce calcul est regroupé dans le fichier `calcul_compatibilite.jl`.
+
+### 5.1.1 Compatibilité de personnalité (MBTI)
+
+La première partie du score prend en compte les compatibilités théoriques entre types MBTI.  
+On utilise pour cela un dictionnaire global `MBTI_COMPATIBILITIES` (défini dans `types_projet.jl`) qui associe à chaque type les trois types les plus compatibles.
+
+```julia (editor=true, logging=false, output=true)
+function score_mbti(user_mbti::String, star_mbti::String)
+    u = normalize_mbti(user_mbti)
+    s = normalize_mbti(star_mbti)
+
+    if haskey(MBTI_COMPATIBILITIES, u)
+        compatibles = MBTI_COMPATIBILITIES[u]
+        return s == compatibles[1] ? 50 :
+               s == compatibles[2] ? 35 :
+               s == compatibles[3] ? 20 :
+               s == u              ? 10 : 0
+    else
+        return 0
+    end
+end
+```
+
+Nous attribuons :
+- 50 points pour le type le plus compatible,
+- 35 pour le deuxième,
+- 20 pour le troisième,
+- 10 si la star a le même type que l'utilisateur,
+- 0 sinon.
+
+Ce choix traduit l'idée que certaines personnalités se complètent particulièrement bien, mais qu'avoir le même profil peut également fonctionner, même si ce n'est pas optimal.
+
+### 5.1.2 Compatibilité orientation / genre
+
+Ensuite, nous modélisons l'attirance possible entre l'utilisateur et la star en prenant en compte le **genre** et l’**orientation sexuelle** des deux.
+
+Deux fonctions servent à tester si la relation est possible dans les deux sens :
+- est-ce que l'utilisateur peut être attiré par la star ?
+- est-ce que la star peut être attirée par l'utilisateur ?
+
+```julia (editor=true, logging=false, output=true)
+function user_attire_par_star(user::Utilisateur, star::Star)
+    return user.orientation == "Pan" ||
+           (user.orientation == "Hétéro"    && user.genre != star.genre) ||
+           (user.orientation == "Gay"       && user.genre == "H" && star.genre == "H") ||
+           (user.orientation == "Lesbienne" && user.genre == "F" && star.genre == "F") ||
+           (user.orientation == "Bi")
+end
+
+function star_attiree_par_user(star::Star, user::Utilisateur)
+    return star.orientation == "Pan" ||
+           (star.orientation == "Hétéro"    && star.genre != user.genre) ||
+           (star.orientation == "Gay"       && star.genre == "H" && user.genre == "H") ||
+           (star.orientation == "Lesbienne" && star.genre == "F" && user.genre == "F") ||
+           (star.orientation == "Bi")
+end
+```
+
+Si l'une de ces deux conditions n'est pas respectée, la star est directement exclue.  
+Sinon, on calcule un score d'orientation :
+
+```julia (editor=true, logging=false, output=true)
+function score_orientation(user::Utilisateur, star::Star)
+    if !user_attire_par_star(user, star) || !star_attiree_par_user(star, user)
+        return 0
+    elseif user.orientation == "Hétéro" && star.orientation == "Hétéro"
+        return 30
+    else
+        return 25
+    end
+end
+```
+
+L'idée est que :
+- une compatibilité parfaitement « symétrique » (hétéro/hétéro avec genres opposés) est valorisée au maximum (30 points),
+- les autres formes de compatibilité (bi, gay, lesbienne, pan) obtiennent un score légèrement plus faible mais restent possibles (25 points).
+
+### 5.1.3 Compatibilité d’âge
+
+La troisième composante du score concerne la différence d'âge.  
+Nous supposons qu’une petite différence d’âge facilite la compatibilité et nous appliquons un barème simple par tranches :
+
+```julia (editor=true, logging=false, output=true)
+function score_age(user_age::Int, star_age::Int)
+    diff = abs(user_age - star_age)
+    return diff <= 5  ? 20 :
+           diff <= 10 ? 10 :
+           diff <= 15 ? 5  : 0
+end
+```
+
+- moins de 5 ans d’écart : 20 points,
+- entre 5 et 10 ans : 10 points,
+- entre 10 et 15 ans : 5 points,
+- au-delà : 0 point.
+
+Cela permet de favoriser les couples de même génération, sans rendre les autres cas strictement impossibles (mais avec un score plus faible).
+
+### 5.1.4 Score global de compatibilité
+
+Enfin, le score global est obtenu simplement en additionnant les trois contributions, avec un plafond à 100 :
+
+```julia (editor=true, logging=false, output=true)
+function calculer_compatibilite(user::Utilisateur, star::Star)
+    s_mbti   = score_mbti(user.mbti, star.mbti)
+    s_orient = score_orientation(user, star)
+    s_age    = score_age(user.age, star.age)
+    return min(s_mbti + s_orient + s_age, 100)
+end
+```
+
+Ce score est ensuite utilisé pour comparer les différentes stars entre elles et choisir la meilleure correspondance pour l'utilisateur.
+
+---
+
+## 5.2 Application du calcul de compatibilité à toute la base de données
+
+Une fois que les critères de compatibilité ont été définis (MBTI, âge, genre, orientation), la dernière étape consiste à appliquer ces règles à l’ensemble des célébrités présentes dans notre base de données.  
+Cette partie du programme charge le fichier CSV nettoyé, instancie chaque star sous forme d’objet `Star`, puis calcule un score global pour chaque célébrité.
+
+### 5.2.1 Chargement du CSV des stars
+
+Nous utilisons la fonction `charger_stars` (définie dans `calcul_compatibilite.jl`) pour transformer chaque ligne du fichier `base_stars_clean.csv` en un objet `Star` complet :
+
+```julia (editor=true, logging=false, output=true)
+stars = charger_stars(joinpath(root, "data", "base_stars_clean.csv"))
+```
+
+Cette fonction :
+- lit chaque ligne du fichier CSV avec `CSV.read`,
+- normalise le genre, l’orientation et le MBTI,
+- sépare prénom et nom,
+- crée un objet `Star` avec toutes les informations utiles.
+
+Ce prétraitement garantit que toutes les stars sont au même format que l’utilisateur, ce qui permet un calcul cohérent.
+
+### 5.2.2 Filtrage initial : orientation et genre
+
+Avant même de calculer un score, le programme applique un filtre logique :  
+une star est retenue uniquement si l’utilisateur peut être attiré par elle et si la star peut être attirée par l’utilisateur.
+
+Ce double filtrage est réalisé par :
+
+```julia (editor=true, logging=false, output=true)
+filtered_stars = filter(stars) do s
+    user_attire_par_star(user, s) && star_attiree_par_user(s, user)
+end
+```
+
+Si l’un des deux tests échoue, la star ne participe pas au calcul.  
+Cela évite d’obtenir des correspondances impossibles (par exemple un utilisateur hétérosexuel avec une star homosexuelle qui n’est attirée que par les personnes de son propre genre).
+
+### 5.2.3 Calcul de compatibilité pour chaque célébrité
+
+Pour chaque star retenue, nous appliquons ensuite le score global défini à la section précédente :
+
+```julia (editor=true, logging=false, output=true)
+scores = [(s, calculer_compatibilite(user, s)) for s in filtered_stars]
+```
+
+Chaque élément de cette liste contient :
+- l’objet `Star`,
+- le score numérique associé.
+
+### 5.2.4 Sélection des meilleures correspondances
+
+Une fois tous les scores calculés, ils sont triés du plus élevé au plus bas :
+
+```julia (editor=true, logging=false, output=true)
+sorted = sort(scores, by = x -> x[2], rev = true)
+```
+
+Dans la pratique, nous encapsulons cela dans une fonction utilitaire qui renvoie directement les `top` meilleures stars :
+
+```julia (editor=true, logging=false, output=true)
+function trouver_meilleures_compatibilites(user::Utilisateur, stars::Vector{Star}; top::Int=5)
+    filtered_stars = filter(stars) do s
+        user_attire_par_star(user, s) && star_attiree_par_user(s, user)
+    end
+
+    println("Filtrage : $(length(filtered_stars)) célébrités retenues sur $(length(stars)) totales.")
+
+    scores = [(s, calculer_compatibilite(user, s)) for s in filtered_stars]
+    sorted = sort(scores, by = x -> x[2], rev = true)
+
+    return sorted[1:min(top, length(sorted))]
+end
+```
+
+Dans `runcompatibilite0.jl`, nous utilisons simplement :
+
+```julia (editor=true, logging=false, output=true)
+resultats = trouver_meilleures_compatibilites(user, stars)
+top_star, top_score = resultats[1]
+```
+
+Nous obtenons ainsi directement la célébrité la plus compatible.
+
+### 5.2.5 Affichage final : nom, score et graphique
+
+Pour rendre le résultat plus visuel, nous utilisons une fonction graphique `afficher_coeur` définie dans `graphique_coeur.jl`.  
+Cette fonction affiche un cœur dont la couleur varie en fonction du pourcentage de compatibilité, avec le nom de la star au centre.
+
+```julia (editor=true, logging=false, output=true)
+afficher_coeur(top_score, string(top_star.firstname, " ", top_star.lastname))
+```
+
+L’utilisateur obtient ainsi :
+- le nom complet de sa star compatible,
+- le pourcentage total de compatibilité,
+- un graphique final affichant un cœur coloré en fonction du niveau de match.
+
+Cette étape conclut l’ensemble du pipeline, depuis le questionnaire MBTI jusqu’à l’identification de la célébrité la plus compatible avec l’utilisateur.
+
+# 6. Interface Graphique – Affichage du Cœur (graphique_coeur.jl)
+
+Dans cette section, nous présentons la partie du projet qui concerne **l’affichage graphique final**, développée par Amine.  
+Cette étape intervient **après le calcul du score de compatibilité**, et permet d’afficher un **cœur dynamique**, coloré en fonction du score obtenu entre l’utilisateur et la star choisie.
+
+Contrairement à Bonito.jl (utilisé pour l’interface), **cette partie graphique est indépendante** et repose sur **PlotlyJS**, via un fichier séparé : `graphique_coeur.jl`.
+
+---
+
+## 6.1 Objectif de la visualisation
+
+L’objectif est de produire une **visualisation forte et personnalisée** :
+
+- Un **cœur mathématique** tracé grâce à une équation paramétrique  
+- Une **couleur dépendante du score**  
+- Le **nom de la star** inscrit au centre  
+- Le **score de compatibilité** affiché directement  
+- Une esthétique moderne, simple et représentative
+
+Cette visualisation apparaît à la fin de `runcompatibilite0.jl`.
+
+---
+
+## 6.2 Code du fichier `graphique_coeur.jl`
+
+```julia
+using PlotlyJS
+
+function afficher_coeur(score::Int, nom::String)
+    # Courbe du cœur paramétrique
+    t = range(-π, π, length=400)
+    x = 16 .* sin.(t).^3
+    y = 13 .* cos.(t) .- 5 .* cos.(2t) .- 2 .* cos.(3t) .- cos.(4t)
+
+    # Couleur du cœur selon score
+    couleur = score < 40 ? "#777777" :
+              score < 60 ? "#FFB6C1" :
+              score < 80 ? "#FF69B4" : "#FF1493"
+
+    trace = scatter(
+        x = x,
+        y = y,
+        mode = "lines",
+        fill = "toself",
+        fillcolor = couleur,
+        line = attr(color="white", width=3),
+        hoverinfo = "none"
+    )
+
+    # Texte au centre du cœur
+    y_center = 1.2
+    name_size  = clamp(40 - max(length(nom)-14, 0), 22, 40)
+    score_size = 28
+
+    text_html = "<span style='font-size:$(name_size)px; font-weight:700; color:white;'>$(nom)</span><br><br>" *
+                "<span style='font-size:$(score_size)px; color:white;'>Compatibilité : $(score)%</span>"
+
+    ann = attr(
+        x = 0,
+        y = y_center,
+        text = text_html,
+        showarrow = false,
+        xanchor = "center",
+        yanchor = "middle",
+        align = "center"
+    )
+
+    layout = Layout(
+        title = "Résultat de compatibilité",
+        plot_bgcolor = "black",
+        paper_bgcolor = "black",
+        xaxis = attr(visible=false, scaleanchor="y", scaleratio=1),
+        yaxis = attr(visible=false),
+        showlegend = false,
+        annotations = [ann],
+        margin = attr(l=0, r=0, t=40, b=0)
+    )
+
+    display(plot([trace], layout))
+end
+```
+
+---
+
+## 6.3 Intégration dans `runcompatibilite0.jl`
+
+Une fois que l’algorithme identifie la star la plus compatible, on appelle :
+
+```julia
+afficher_coeur(top_score, "$(top_star.firstname) $(top_star.lastname)")
+```
+
+Ce qui génère automatiquement :
+
+- Le cœur coloré  
+- Le nom de la star  
+- Le pourcentage affiché au centre  
+
+---
+
+## 6.4 Résumé de la section
+
+| Élément | Rôle |
+|--------|------|
+| `graphique_coeur.jl` | Produit la visualisation finale |
+| PlotlyJS | Permet le rendu graphique interactif |
+| Cœur paramétrique | Symbolise la compatibilité |
+| Texte et couleurs dynamiques | Personnalisation du résultat |
+| Intégration dans runcompatibilite0.jl | Affichage final du programme |
+
+
+# 7. Intégration de R Shiny avec le système de compatibilité 
+
+## 7.1 Objectif de la partie Shiny
+
+L’objectif de cette section est d’expliquer comment une application **R Shiny** vient compléter le projet Julia.
+Shiny sert ici d’interface alternative pour remplir le questionnaire MBTI et enregistrer les choix de l’utilisateur
+dans des fichiers texte, que le programme Julia peut ensuite lire pour calculer les compatibilités avec les stars.
+Cette version vise une expérience utilisateur plus interactive et plus proche d’une application web.
+
+---
+
+## 7.2 Fonctionnement général de Shiny dans le projet
+
+L’application Shiny est organisée autour de trois éléments fondamentaux :
+
+1. **Un mini questionnaire MBTI**, affiché dans une page web.
+2. **Un bouton permettant d’enregistrer les résultats** dans des fichiers texte :
+   - `mbti_result.txt` : type MBTI final de l’utilisateur  
+   - `mbti_star_result.txt` : type MBTI compatible qu’il préfère  
+   - `user_info.txt` : informations personnelles (nom, prénom, âge, orientation, genre)
+3. **Une exécution ultérieure dans Julia**, qui lit ces fichiers et calcule les compatibilités.
+
+Ainsi, Shiny ne calcule pas de compatibilité :  
+**Shiny collecte – Julia calcule.**
+
+---
+
+## 7.3 Code de lancement côté Julia : `runcompabiliteRshiny.jl`
+
+Ce fichier démarre l’application Shiny, attend que l’utilisateur termine le questionnaire, puis exécute le calcul Julia.
+
+```julia
+using CSV, DataFrames
+using PlotlyJS   # si tu veux afficher le cœur
+
+root = @__DIR__
+
+include(joinpath(root, "..", "src", "types_projet.jl"))
+include(joinpath(root, "..", "src", "compatibilité.jl"))
+include(joinpath(root, "..", "src", "calcul_compatibilite.jl"))
+include(joinpath(root, "..", "graphique", "graphique_coeur.jl"))
+
+# 1. Lancement de Shiny
+run(`Rscript -e "shiny::runApp('$(root)', launch.browser=TRUE)"`, wait=false)
+
+println("Quand tu as terminé le questionnaire dans Shiny, appuie sur Entrée ici.")
+readline()
+
+# 2. Lecture des fichiers exportés par Shiny
+mbti_user = chomp(read(joinpath(root, "mbti_result.txt"), String))
+mbti_star = chomp(read(joinpath(root, "mbti_star_result.txt"), String))
+println("Type MBTI → $mbti_user")
+println("Type préféré → $mbti_star")
+
+# 3. Lecture des infos utilisateur
+user_info = Dict{String,String}()
+for line in eachline(joinpath(root, "user_info.txt"))
+    parts = split(line)
+    if length(parts) == 2
+        user_info[parts[1]] = parts[2]
+    end
+end
+
+utili = Utilisateur(
+    get(user_info, "prenom", "Inconnu"),
+    get(user_info, "nom", "Inconnu"),
+    get(user_info, "genre", "H"),
+    parse(Int, get(user_info, "age", "25")),
+    get(user_info, "orientation", "Hétéro"),
+    mbti_user
+)
+
+println("Utilisateur chargé : $(utili.firstname) $(utili.lastname) – $(utili.age) ans")
+
+# 4. Calcul compatibilités
+stars = charger_stars(joinpath(root, "..", "data", "base_stars_clean.csv"))
+resultats = trouver_meilleures_compatibilites(utili, stars)
+
+if !isempty(resultats)
+    top_star, top_score = resultats[1]
+    println("Star la plus compatible : $(top_star.firstname) $(top_star.lastname)")
+    afficher_coeur(top_score, "$(top_star.firstname) $(top_star.lastname)")
+end
+```
+
+Ce script assure la **liaison totale** entre R Shiny et Julia.
+
+---
+
+## 7.4 Structure simplifiée de l’application Shiny
+
+Le fichier `app.R` contient trois parties :
+
+### **UI — Interface utilisateur**
+
+- Formulaire : nom, prénom, âge, genre, orientation  
+- Questionnaire MBTI  
+- Bouton **Enregistrer mes résultats**
+
+### **Server — Logique serveur**
+
+- Calcul du MBTI depuis les réponses  
+- Choix du type compatible  
+- Écriture dans trois fichiers texte :
+  - `mbti_result.txt`
+  - `mbti_star_result.txt`
+  - `user_info.txt`
+
+### **RunApp — Lancement**
+
+```r
+shinyApp(ui = ui, server = server)
+```
+
+---
+
+## 7.5 Pourquoi intégrer Shiny ?
+
+L’ajout de Shiny apporte plusieurs avantages :
+
+- Une **interface web moderne** et intuitive  
+- Aucune saisie au clavier dans le terminal  
+- Possibilité d’utiliser l’application **sans connaître Julia**  
+- Une séparation claire entre :
+  - **Collecte des réponses → Shiny**
+  - **Analyse et compatibilité → Julia**
+
+Cette section permet de montrer que le groupe a su réaliser une **solution hybride multiparadigme** :  
+un front-end Shiny et un back-end Julia.
+
+---
+
+## 7.6 Conclusion de la partie Shiny
+
+La version Shiny du questionnaire améliore fortement l’expérience utilisateur et offre un point d’entrée attrayant
+au programme de compatibilité. Une fois les réponses enregistrées, Julia prend la suite pour exécuter une analyse
+beaucoup plus précise grâce à la base de données des célébrités et aux règles de compatibilité MBTI.
+
+Les deux outils se complètent parfaitement :
+- **Shiny** → Interface interactive  
+- **Julia** → Calculs avancés et analyse approfondie
+
+Cette section démontre la capacité du projet à intégrer plusieurs technologies pour construire une application complète.
+
 
 ## Supplément : Partie Rshiny
 
