@@ -290,3 +290,110 @@ Grâce à Bonito.jl, le test MBTI a pu être transformé en une application web 
 
 //à completer ici amine // rshiny ahmed
 
+## Supplément : Partie Rshiny
+
+Dans la continuité du projet MBTI réalisé en Julia, une seconde approche a été développée en R Shiny.
+Cette version n’utilise pas les types MBTI mais repose sur un fonctionnement analogue :
+l’utilisateur répond à un questionnaire et l’application calcule un pourcentage de compatibilité avec plusieurs stars.
+L’objectif était d’avoir un équivalent du projet Julia, mais sous forme d’une application web interactive réalisée en R.
+
+## Notice préalable concernant la version R Shiny :
+
+Avant de présenter la partie réalisée en R Shiny, il est important de préciser que l’application Shiny ne reprend pas le questionnaire MBTI ni la logique détaillée dans les sections précédentes du projet Julia.
+En effet, la version Julia s’appuie sur une modélisation complète du MBTI, avec 16 questions structurées permettant de déterminer le type de personnalité de l’utilisateur, puis de calculer ses compatibilités selon des règles psychologiques définies.
+La version Shiny, quant à elle, adopte une approche différente et volontairement simplifiée, davantage orientée vers une expérience ludique de “speed-dating de stars”.
+Les différences essentielles à noter sont :
+-Les questions ne sont pas celles du test MBTI : elles portent sur quelques critères simples (humour, sport, musique, voyages) afin de permettre une interaction rapide dans un environnement web.
+-La méthode de calcul de compatibilité n’est pas la même : en Shiny, elle repose sur la similarité numérique entre les réponses de l’utilisateur et un profil simplifié des stars, et non sur les types MBTI.
+-Certaines adaptations hors du contexte MBTI ont été faites volontairement pour obtenir une interface intuitive, dynamique et adaptée à une démonstration de projet R Shiny.
+Ainsi, cette partie ne cherche pas à reproduire la rigueur psychométrique du projet Julia, mais constitue une version alternative, complémentaire et plus ludique, tout en respectant l’objectif général :
+proposer une application interactive permettant de déterminer la star la plus compatible avec l’utilisateur.
+
+## Version Shiny simple : Speed-Dating de Stars
+
+La première version du projet a été construite avec shiny (version basique).
+L’application repose sur quatre grandes étapes :
+
+1. Création d’une mini base de données de stars :
+
+On définit un petit tableau contenant les caractéristiques de plusieurs célébrités, par exemple :
+-leur nom
+-un score de 1 à 5 sur plusieurs critères (humour, sport, musique, voyages)
+Exemple de structure interne :
+Star	                       Humour	   Sport	  Musique	  Voyages
+Zendaya	                     5	        3	       4 	        5
+Timothée Chalamet	           3	        4 	      5	         4
+Taylor Swift	                4	        2	       5	         3
+Ryan Gosling	                4	        5	       3	         4
+
+Ces valeurs servent de profil de personnalité simplifié.
+
+2. Questionnaire utilisateur :
+
+L'utilisateur répond à quatre questions grâce à des sliders allant de 1 à 5 :
+ “Tu aimes l’humour ?”
+ “Tu es sportif(ve) ?”
+ “Tu adores la musique ?”
+ “Tu aimes voyager ?”
+Ces critères sont volontairement simples pour garder l’interface intuitive.
+
+
+3. Calcul de la compatibilité :
+
+Le score de compatibilité est calculé ainsi :
+
+Compatibilité = 100 - ((distance moyenne entre les réponses et le profil de la star)/4) x 100
+Autrement dit :
+plus les réponses de l’utilisateur sont proches des valeurs de la star → plus le pourcentage est élevé.
+
+
+4. Affichage des résultats:
+
+Shiny permet d’afficher :
+un tableau récapitulant les compatibilités
+un graphique en barres montrant visuellement quelle star correspond le mieux
+la star la plus compatible, calculée automatiquement
+
+
+## Version avancée : ShinyDashboard
+
+La seconde version du projet utilise shinydashboard pour produire une interface professionnelle :
+3 onglets principaux :
+- Questionnaire :
+      .sliders pour répondre aux questions
+      .présentation des stars
+- Résultats :
+      .tableau des pourcentages
+      .graphique comparatif
+      .message final : “Ta star la plus compatible est : X ”
+- À propos :
+      .explication du projet et de la logique
+  
+L’utilisation de shinydashboard permet une séparation claire des tâches, un style plus moderne et une navigation plus fluide.
+
+## Intérêt de cette version R Shiny
+
+Cette version R Shiny complète idéalement le projet Julia :
+
+ Julia (console + Bonito)  :              Shiny (app web)  :                           
+ Approche MBTI complète                 | Approche simplifiée par critères          
+ Questionnaire structuré (16 questions) | Questionnaire rapide (4 critères)         
+ Match basé sur compatibilités MBTI     | Score basé sur similarité numérique       
+ Approche plus théorique/personnelle    | Approche ludique, “speed-dating de stars” 
+ Version console + Bonito               | Version web + Dashboard                   
+
+## Conclusion de la partie R Shiny
+
+La double implémentation (version simple + version dashboard) a permis :
+-de comprendre la structure d’une application Shiny
+-de gérer les interactions utilisateur
+-de calculer dynamiquement une compatibilité
+-d’afficher des résultats visuels et attrayants
+-de produire une application web intuitive et utilisable par n’importe quel utilisateur
+Cette approche complète donc logiquement le projet MBTI réalisé en Julia en apportant une version “grand public”, accessible, interactive et visuellement plus moderne.
+
+
+
+
+
+
