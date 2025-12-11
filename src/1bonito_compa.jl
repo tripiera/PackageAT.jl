@@ -23,7 +23,7 @@ const QUESTIONS = [
 
 function ask_mbti_bonito()
     app = App() do session
-        # --- Infos utilisateur ---
+        #Infos utilisateur
         name = TextField("", Dict(:placeholder=>"Nom"))
         firstname = TextField("", Dict(:placeholder=>"Prénom"))
         age = TextField("", Dict(:placeholder=>"Âge"))
@@ -32,7 +32,7 @@ function ask_mbti_bonito()
         start_btn = Button("Commencer le test MBTI")
         info_output = Observable{String}("")
 
-        # --- Zone de questionnaire ---
+        #Zone de questionnaire
         question_text = Observable{String}("")
         opt1_text = Observable{String}("")
         opt2_text = Observable{String}("")
@@ -42,19 +42,19 @@ function ask_mbti_bonito()
         compatible_text = Observable{String}("")
 
 
-        # --- Boutons ---
+        #Boutons 
         opt1_btn = Button("1")
         opt2_btn = Button("2")
         compat_btns_dynamic = Observable{Vector{Button{String}}}(Vector{Button{String}}())
 
-        # --- État ---
+        #init compteur lettres
         qidx = Ref(0)
         scores = Dict('E'=>0,'I'=>0,'S'=>0,'N'=>0,'T'=>0,'F'=>0,'J'=>0,'P'=>0)
         tie_letters = Dict{Symbol,Union{Char,Nothing}}(:L1=>nothing, :L2=>nothing, :L3=>nothing, :L4=>nothing)
         phase = Ref(:intro)  # :intro, :questions, :tie_*, :choix_compat, :done
         mbti_value = Observable{String}("")
 
-        # --- Fonctions ---
+        #mettre à jour les questions au fur et à mesure
         function update_question!()
             if qidx[] >= 1 && qidx[] <= length(QUESTIONS)
                 (q,a1,a2,d1,d2) = QUESTIONS[qidx[]]
@@ -80,7 +80,6 @@ function ask_mbti_bonito()
             if tie_letters[:L3] === nothing; phase[] = :tie_TF; question_text[] = "Égalité T/F — Choisis 1 ou 2"; return end
             if tie_letters[:L4] === nothing; phase[] = :tie_JP; question_text[] = "Égalité J/P — Choisis 1 ou 2"; return end
 
-            # Tout défini : on passe à la phase MBTI + compatibilité
             show_mbti_result!()
         end
 
@@ -126,7 +125,7 @@ function ask_mbti_bonito()
                 qidx[] += 1
                 update_question!()
             elseif phase[] in [:tie_EI, :tie_SN, :tie_TF, :tie_JP]
-                # Résolution égalité
+                # Résolution égalité entres lettres
                 if phase[] == :tie_EI; tie_letters[:L1] = which==1 ? 'E' : 'I'
                 elseif phase[] == :tie_SN; tie_letters[:L2] = which==1 ? 'S' : 'N'
                 elseif phase[] == :tie_TF; tie_letters[:L3] = which==1 ? 'T' : 'F'
@@ -148,7 +147,7 @@ function ask_mbti_bonito()
         end
 
 
-        # --- Callbacks ---
+        #Callbacks 
         on(opt1_btn) do _; choose_opt(1); end
         on(opt2_btn) do _; choose_opt(2); end
         on(start_btn) do _
@@ -160,7 +159,7 @@ function ask_mbti_bonito()
             info_output[] = "Bonjour $(firstname[]) $(name[]), commence le questionnaire."
         end
 
-        # --- Layout ---
+        # Layout 
         return DOM.div(
             DOM.div("## Informations", name, firstname, age, genre, orientation, start_btn, info_output),
             DOM.div("## Questionnaire",
