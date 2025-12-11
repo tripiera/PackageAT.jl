@@ -3,7 +3,7 @@ library(shiny)
 library(shinythemes)
 library(plotly)
 
-# --- Compat tables (identiques à Julia) ---
+# --- Compat tables
 MBTI_COMP <- list(
   ESTJ = c("INFP","ENFP","ISTP"), ISTJ = c("ENFJ","INFJ","ESTP"),
   ESFJ = c("INTP","ENTP","ISFP"), ISFJ = c("ENTJ","INTJ","ESFP"),
@@ -83,11 +83,11 @@ ui <- fluidPage(
     .hint{color:#a04c74;font-size:12px;text-align:center}
   "))),
   br(), h1(" Test de Compatibilité — Questionnaire MBTI (Shiny) "),
-# p(class="hint","Réponds, clique, et je crée les fichiers (mbti_result.txt, mbti_star_result.txt, user_info.txt)."),
+
   
   br(),
   div(class="card",
-      h3("👤 Infos personnelles"),
+      h3("👤ùInfos personnelles"),
       fluidRow(
         column(6, textInput("nom","Nom")),
         column(6, textInput("prenom","Prénom"))
@@ -102,7 +102,7 @@ ui <- fluidPage(
   
   br(),
   div(class="card",
-      h3("🧠 Questions MBTI (16)"),
+      h3("Questions MBTI (16)"),
       uiOutput("q_ui"),
       br(),
       uiOutput("tie_ui"),
@@ -119,7 +119,7 @@ ui <- fluidPage(
       ),
       br(),
       uiOutput("compat_ui"),
-      div(style="text-align:center", actionButton("save","💾 Enregistrer les fichiers", class="love-btn"))
+      div(style="text-align:center", actionButton("save","Enregistrer les fichiers", class="love-btn"))
   ),
   br(), br()
 )
@@ -176,7 +176,7 @@ server <- function(input, output, session){
     tie_JP <- scores["J"]==scores["P"]
     if (!any(c(tie_EI,tie_SN,tie_TF,tie_JP))) return(NULL)
     tagList(
-      h4("⚖️ Départage (égalité détectée)"),
+      h4("⚖ Départage (égalité détectée)"),
       fluidRow(
         if (tie_EI) column(6, radioButtons("tie_EI","Énergie (E/I) — Tu trouves ton énergie surtout…",
           choices=c("E = en parlant aux autres","I = en étant seul·e"),inline=TRUE,selected=character(0))),
@@ -248,10 +248,10 @@ server <- function(input, output, session){
     res<-calc_mbti();req(res)
     opts<-MBTI_COMP[[res$mbti]]
     tagList(
-      h4("⭐ Choisis ton type compatible préféré"),
+      h4("Choisis ton type compatible préféré"),
       radioButtons("compat_choice",NULL,
                    choices=setNames(c("0","1","2","3"),
-                     c(paste0("🎲 Hasard : ",paste(opts,collapse=", ")),
+                     c(paste0("Hasard : ",paste(opts,collapse=", ")),
                        paste0("1) ",opts[1]),paste0("2) ",opts[2]),paste0("3) ",opts[3]))))
     )
   })
@@ -271,7 +271,7 @@ server <- function(input, output, session){
     )
     writeLines(info,"user_info.txt")
     showModal(modalDialog(
-      title="✅ Fichiers créés",
+      title=" Fichiers créés",
       HTML(paste0("<b>mbti_result.txt</b> = ",res$mbti,"<br/>",
                   "<b>mbti_star_result.txt</b> = ",chosen,"<br/>",
                   "<b>user_info.txt</b> enregistré ")),
