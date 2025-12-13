@@ -284,7 +284,7 @@ return DOM.div(
       DOM.div(compatible_text)
   ))
 ```
-Grâce à Bonito.jl, le test MBTI a pu être transformé en une application web interactive, plus intuitive que la version console. L’utilisateur peut saisir ses informations, répondre aux questions par clics, visualiser son type MBTI et choisir un profil compatible de manière totalement graphique.
+Grâce à Bonito.jl, le test MBTI a pu être transformé en une application web interactive, plus intuitive que la version console. L’utilisateur peut saisir ses informations, répondre aux questions par clics, visualiser son type MBTI et choisir un profil compatible de manière totalement graphique. Nous avons essayé de faire la partie 5 ci-dessous avec bonito.jl mais sans succès .
 
 
 ## 5. Trouver la star compatible avec l'utilisateur
