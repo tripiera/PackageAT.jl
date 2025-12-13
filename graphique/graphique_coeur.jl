@@ -15,7 +15,7 @@ function afficher_coeur(score::Int, nom::String)
                     fillcolor=couleur, line=attr(color="white", width=3), hoverinfo="none")
 
     # —— Texte au MILIEU du cœur, avec gros espace entre les 2 lignes ——
-    y_center = 1.2                     # centre vertical du cœur (ajuste à 1.0 ou 1.4 si tu veux)
+    y_center = 1.2                     # centre vertical du cœur 
     name_size  = clamp(40 - max(length(nom)-14, 0), 22, 40)  # réduit si nom long
     score_size = 28
 

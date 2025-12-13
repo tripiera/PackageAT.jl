@@ -1,3 +1,4 @@
+#Amine
 using CSV
 using DataFrames
 include("types_projet.jl")
@@ -32,7 +33,7 @@ function trouver_meilleurs_matchs(user::Utilisateur, chemin_csv::String, mbti_ob
     # Trier du plus compatible au moins compatible
     sort!(resultats, :Score, rev=true)
 
-    println("\n💘 Top $(top) des célébrités compatibles :")
+    println("\n Top $(top) des célébrités compatibles :")
     for i in 1:top
         println("$(i). $(resultats[i, :Star]) → $(resultats[i, :Score])%")
     end

@@ -134,7 +134,7 @@ end
 # ============================================================
 
 function trouver_meilleures_compatibilites(user::Utilisateur, stars::Vector{Star}; top::Int=5)
-    # 🔍 Filtrer selon genre/orientation avant tout calcul
+    # filtrer selon genre/orientation avant tout calcul
     filtered_stars = filter(stars) do s
         user_attire_par_star(user, s) && star_attiree_par_user(s, user)
     end
