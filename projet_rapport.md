@@ -961,6 +961,129 @@ Cette approche complète donc logiquement le projet MBTI réalisé en Julia en a
 
 
 
+## GENESIS — Simulation du vivant
+
+Cette première version du projet **GENESIS** est une application **Shiny** volontairement simple, conçue comme un prototype fonctionnel pour explorer la **vie artificielle** et l’**émergence** de dynamiques collectives à partir de règles locales minimales.
+
+### Choix technologiques (sans JavaScript)
+
+L’application a été développée en **R** avec :
+- **shiny** : structure de l’interface et gestion de la réactivité (entrées utilisateur, sorties graphiques, boucles d’animation)
+- **ggplot2** : tracé de la courbe d’évolution de la population
+- **bslib** : thème Bootstrap personnalisé (couleurs, typographie)
+
+Un point important de cette version est l’absence totale de JavaScript :
+- aucune dépendance JavaScript n’a été ajoutée ;
+- l’animation visuelle et l’identité graphique reposent uniquement sur du **CSS**, injecté via `tags$style(HTML(...))` ;
+- les éléments HTML (en-tête, audio, mise en page) sont intégrés via `tags$*` (Shiny) sans scripts.
+
+### Structure de l’interface (UI)
+
+L’interface est organisée en deux zones :
+
+1. **Panneau de contrôle (sidebar)**  
+   - curseurs (`sliderInput`) :
+     - population initiale,
+     - gravité,
+     - taux de mutation ;
+   - boutons (`actionButton`) :
+     - création du monde,
+     - lecture / pause ;
+   - affichage d’indicateurs (textes réactifs) :
+     - nombre d’êtres vivants,
+     - énergie moyenne,
+     - nombre de naissances.
+
+2. **Zone principale (main panel)**  
+   - une visualisation de la simulation en temps réel (nuage de points) ;
+   - une courbe d’évolution de la population (historique des dernières étapes).
+
+L’identité visuelle est centralisée dans :
+- un **thème** `bslib::bs_theme(...)` (fond noir, texte cyan, police Orbitron) ;
+- un **bloc CSS** intégré (effets néon, mise en forme, animation par `@keyframes` du logo ADN).
+
+### Moteur de simulation (serveur)
+
+Le serveur implémente un moteur d’animation discret, piloté par la réactivité Shiny.
+
+#### Variables réactives
+
+- `world` : data.frame représentant l’état courant du monde (toutes les entités vivantes)
+- `running` : booléen de lecture / pause
+- `births` : compteur global de naissances
+- `history` : historique (fenêtre glissante) de la taille de population
+- `tick <- reactiveTimer(150)` : horloge (itération toutes les 150 ms)
+
+#### Création du monde initial
+
+Lors d’un clic sur **Créer le monde**, une population de taille `n` est générée aléatoirement :
+- position `(x, y)` uniforme dans \\([0,1]\\),
+- vitesses `(vx, vy)` centrées, faible variance,
+- énergie initiale dans un intervalle fixé.
+
+Cette étape réinitialise également :
+- le compteur de naissances,
+- l’historique de population,
+- l’état `running` (démarrage immédiat).
+
+#### Mise à jour à chaque itération
+
+À chaque “tick” (si `running == TRUE`) :
+
+1. **Gravité**  
+   La gravité agit sur la vitesse verticale :
+   - `vy <- vy - grav * cste`
+
+2. **Déplacement**  
+   Les positions sont mises à jour, puis ramenées dans \\([0,1]\\) par un modulo :
+   - `x <- (x + vx) %% 1`
+   - `y <- (y + vy) %% 1`
+
+3. **Énergie et mortalité**  
+   L’énergie décroît à chaque étape :
+   - `energy <- max(0, energy - cste)`
+   Les entités dont l’énergie devient nulle sont supprimées.
+
+4. **Mutation / reproduction stochastique**  
+   Avec une probabilité fixée par l’utilisateur (`mutation`), de nouveaux individus sont ajoutés :
+   - ajout d’un petit nombre d’entités,
+   - paramètres aléatoires proches des distributions initiales,
+   - incrément du compteur `births`.
+
+5. **Historique population**  
+   La population courante est ajoutée à `history`.
+   On conserve une fenêtre glissante (par exemple 100 dernières étapes) pour la courbe.
+
+### Sorties graphiques et interprétation
+
+1. **Visualisation du monde (plot principal)**  
+   - chaque entité est un point ;
+   - la taille du point est proportionnelle à l’énergie (`cex ~ energy`) ;
+   - la couleur dépend de l’énergie (gradient rouge → vert), ce qui met en évidence :
+     - les individus proches de la mort,
+     - ceux qui conservent une énergie élevée.
+
+2. **Courbe d’évolution de la population**  
+   Construite à partir de `history` via **ggplot2**, elle permet d’observer :
+   - phases de croissance (mutations fréquentes),
+   - phases de décroissance (gravité forte / pertes énergétiques),
+   - régimes instables ou quasi stationnaires.
+
+### Contenu multimédia (audio)
+
+Un son d’ambiance peut être joué via une balise HTML :
+- `tags$audio(..., autoplay, loop, controls = NA)`
+Le fichier audio est placé dans le dossier `www/` de l’application.
+
+### Objectifs de cette version
+
+Cette version Shiny simple vise à :
+- valider la faisabilité et la cohérence du modèle de base ;
+- proposer une interface minimaliste et paramétrable ;
+- montrer comment des règles simples (mouvement, énergie, reproduction aléatoire) peuvent engendrer des dynamiques globales ;
+- servir de socle pour des versions futures (ressources, espèces, sélection, interactions, métriques plus fines).
+
+
 
 
 
